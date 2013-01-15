@@ -19,7 +19,6 @@ describe Birdbox::Search::Resource do
     r = subject.first
     r.wont_be_nil
     r.persisted?.must_equal(true)
-    r.url.must_equal(@items.first.url)
   end
 
   it "must be retrievable by id" do
