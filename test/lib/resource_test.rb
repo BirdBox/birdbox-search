@@ -6,10 +6,11 @@ describe Birdbox::Search::Resource do
   before do
     subject.index.delete
     @items = [ 
-      subject.create(:id => 1, :title => "Purple sunset", :type => "photo", :url => "http://www.example.com/foo.jpg", :tags => %w(birdbox one)),
-      subject.create(:id => 2, :title => "No stone left unturned", :type => "photo", :url => "http://www.example.com/bar.jpg", :tags => %w(birdbox two)),
-      subject.create(:id => 3, :title => "That looks delicious", :type => "photo", :url => "http://www.example.com/baz.jpg", :tags => %w(birdbox three))
+      subject.new(:id => 1, :title => "Purple sunset", :type => "photo", :url => "http://www.example.com/foo.jpg", :tags => %w(birdbox one)),
+      subject.new(:id => 2, :title => "No stone left unturned", :type => "photo", :url => "http://www.example.com/bar.jpg", :tags => %w(birdbox two)),
+      subject.new(:id => 3, :title => "That looks delicious", :type => "photo", :url => "http://www.example.com/baz.jpg", :tags => %w(birdbox three))
     ]
+    subject.index.import(@items)
     subject.index.refresh
   end
 
@@ -39,10 +40,11 @@ describe Birdbox::Search::Resource do
   it "must be searchable with a block" do
     r = subject.search { |search|
       search.query { |query|
-        query.match :type, "photo"
+        query.match :tags, "three"
       }
     }
-    r.size.must_equal(@items.count { |x| x.type == "photo" })
+    puts r.inspect
+    r.size.must_equal(@items.count { |x| x.tags.include?("three") })
   end
 
 end
