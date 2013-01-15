@@ -12,7 +12,7 @@ Gem::Specification.new do |gem|
   gem.summary       = %q{An abstraction of the ElasticSearch API powering Birdbox Search.}
   gem.homepage      = "http://www.birdbox.com"
 
-  gem.add_dependency "rake", "~> 10.0.3"
+  gem.add_dependency "rake", "~> 10.0.0"
   gem.add_dependency "tire", "~> 0.5.4"
 
   gem.files         = `git ls-files`.split($/)
