@@ -30,6 +30,8 @@ And then execute:
   require 'bundler'
   Bundler.setup
 
+  require 'birdbox-search'
+
   # Create an alias to save yourself some typing.
   Resource = Birdbox::Search::Resource
 
@@ -68,7 +70,7 @@ And then execute:
   }
 
   # A more complicated search using a block.
-  results = subject.search { |search|
+  results = Resource.search { |search|
     search.query { |query|
       query.match :type, "photo"
     }
