@@ -8,7 +8,8 @@ describe Birdbox::Search::Resource do
     @items = [ 
       subject.new(:id => 1, :title => "Purple sunset", :type => "photo", :url => "http://www.example.com/foo.jpg", :tags => %w(birdbox one)),
       subject.new(:id => 2, :title => "No stone left unturned", :type => "photo", :url => "http://www.example.com/bar.jpg", :tags => %w(birdbox two)),
-      subject.new(:id => 3, :title => "That looks delicious", :type => "photo", :url => "http://www.example.com/baz.jpg", :tags => %w(birdbox three))
+      subject.new(:id => 3, :title => "That looks delicious", :type => "photo", :url => "http://www.example.com/baz.jpg", :tags => %w(birdbox three)),
+      subject.new(:id => 4, :title => "Tags good", :type => "photo", :url => "http://www.example.com/biz.jpg", :tags => %w(birdbox-tokenizer three))
     ]
     subject.index.import(@items)
     subject.index.refresh
@@ -45,6 +46,16 @@ describe Birdbox::Search::Resource do
     }
     puts r.inspect
     r.size.must_equal(@items.count { |x| x.tags.include?("three") })
+  end
+  
+  it "must not be tokenized on tags" do
+    r = subject.search { |search|
+      search.query { |query|
+        query.match :tags, "birdbox"
+      }
+    }
+    puts r.inspect
+    r.size.must_equal(@items.count { |x| x.tags.include?("birdbox") })
   end
 
 end
