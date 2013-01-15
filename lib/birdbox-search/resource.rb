@@ -11,7 +11,7 @@ module Birdbox
       #validates_format_of :height, :allow_nil => true, :with => /\d+/
       #validates_format_of :width, :allow_nil => true, :with => /\d+/
       
-       # :id = "#{provider}:#{external_id}"
+      # use this for resource id :id = "#{provider}:#{external_id}"
 
       property :provider,         :type => 'string', :analyzer => 'keyword'
       property :owner_uid,        :type => 'string', :analyzer => 'keyword'
