@@ -24,7 +24,7 @@ module Birdbox
         property :tags,             :type => 'string',  :index => 'analyzed',     :analyzer => 'keyword', :default => [ ]
         property :height,           :type => 'integer', :index => 'no'
         property :width,            :type => 'integer', :index => 'no'
-        property :uploaded_at,      :type => 'date',    :index => 'not_analyzed'
+        property :created_at,      :type => 'date',    :index => 'not_analyzed'
         property :taken_at,         :type => 'date',    :index => 'not_analyzed'
         property :description,      :type => 'string',  :index => 'analyzed',     :analyzer => 'standard'
         property :download_url,     :type => 'string',  :index => 'no'
@@ -52,14 +52,19 @@ module Birdbox
         # if resource not in index or tag collection different then save
         # return 0 or 1 (if exists or not)
         ret = 0
-        id = "#{self.provider}:#{self.external_id}"
-        resource = self.find(id)
-        Rails.logger.debug "presisting id=#{id} resource=#{resource.inspect} self={self.inspect}"
+        self.id = "#{self.provider}:#{self.external_id}"
+        
+        resource = Resource.find(self.id)
+        # Won't work outside of a Rails context. For example, it breaks the tests.  Tire has
+        # a way to configure loggers and I will look into that.  Use 'puts' for now or comment
+        # out the line before checking in the code.
+        #Rails.logger.debug "presisting id=#{self.id} resource=#{resource.inspect} self={self.inspect}"
         if !resource or resource.tags != self.tags
-          self[:id] = id
-          self.store self
+          self.save
           ret = 1
-          self.index.refresh
+          # No need to call this.  The index will refresh almost immediately and forcing it
+          # will cause performance issues.
+          #self.index.refresh
         end
         ret
       end
