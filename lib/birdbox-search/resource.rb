@@ -44,8 +44,12 @@ module Birdbox
         hashtags += self.description.to_s.downcase.scan(/\B#\w+/).uniq.each do |h|
           h.gsub!('#', '').strip!
         end
-        self.tags.concat hashtags.uniq
-        self.tags = self.tags.uniq
+        if self.tags
+          self.tags.concat hashtags.uniq
+          self.tags = self.tags.uniq
+        else
+          self.tags = hashtags.uniq
+        end
       end
       
       def persist
