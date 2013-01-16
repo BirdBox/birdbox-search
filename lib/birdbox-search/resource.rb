@@ -44,7 +44,7 @@ module Birdbox
         hashtags += self.description.to_s.downcase.scan(/\B#\w+/).uniq.each do |h|
           h.gsub!('#', '').strip!
         end
-        self.tags << hashtags.uniq
+        self.tags.concat hashtags.uniq
         self.tags = self.tags.uniq
       end
       
@@ -70,8 +70,9 @@ module Birdbox
       end
       
       # SOME CONVENIENCE STATIC WRAPPER I CAN CALL FORM THE PERCH API
-      # def self.find(provider_uids, tags, since=nil, untihl=nil, count=20)
-        # # providers = {'facebook' => ['70712020', '110001002359'], 'twitter' => ['11345923']}
+      # def self.find(provider_uids, provider_uids_exempted, tags, since=nil, untihl=nil, count=20)
+        # # provider_uids = {'facebook' => ['70712020', '110001002359'], 'twitter' => ['11345923']}
+        # # provider_uids_exempted - same data structure as provider_uids - photos/videos 'removed' from a nest
         # # tags = array of tags
         # # since = timestamp - return all results > than since (uploaded_at)
         # # until = timestamp - return all results <= than until (uploaded_at)

@@ -8,8 +8,8 @@ describe Birdbox::Search::Resource do
     subject.create_elasticsearch_index
     @items = [ 
       subject.new(:id => 'facebook:1', :provider => "facebook", :external_id => "1",
-        :owner_uid => "123456", :owner_nickname => "me", :title => "Purple sunset",
-        :type => "photo", :description => "A purple sunset off the coast of Isla Vista, CA",
+        :owner_uid => "123456", :owner_nickname => "me", :title => "Purple #hashtag1 #hashtag2 sunset",
+        :type => "photo", :description => "A purple sunset #hashtag1 off the coast of Isla Vista, CA",
         :url => "http://www.example.com/foo.jpg", :tags => %w(birdbox one),
         :height => 640, :width => 480, :created_at => Time.now.utc),
 
@@ -30,8 +30,8 @@ describe Birdbox::Search::Resource do
   end
   
   it "must parse hashtags" do
-    #r = subject.first
-    #r.parse_hashtags.must_equal(['#hashtag1'])
+    r = subject.first
+    r.parse_hashtags.sort.must_equal(['hashtag1', 'hashtag2', 'birdbox', 'one'].sort)
   end
 
   it "must be persisted" do
