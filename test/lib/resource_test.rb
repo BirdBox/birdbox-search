@@ -6,13 +6,18 @@ describe Birdbox::Search::Resource do
   before do
     subject.index.delete
     @items = [ 
-      subject.new(:id => 1, :title => "Purple sunset", :type => "photo", :url => "http://www.example.com/foo.jpg", :tags => %w(birdbox one)),
-      subject.new(:id => 2, :title => "No stone left unturned", :type => "photo", :url => "http://www.example.com/bar.jpg", :tags => %w(birdbox two)),
-      subject.new(:id => 3, :title => "That looks delicious", :type => "photo", :url => "http://www.example.com/baz.jpg", :tags => %w(birdbox three)),
-      subject.new(:id => 4, :title => "Tags good", :type => "photo", :url => "http://www.example.com/biz.jpg", :tags => %w(birdbox-tokenizer three))
+      subject.new(:id => 1, :title => "Purple #hashtag1 sunset", :type => "photo", :url => "http://www.example.com/foo.jpg", :tags => %w(birdbox one)),
+      subject.new(:id => 2, :title => "No stone #hashtag2 left unturned", :type => "photo", :url => "http://www.example.com/bar.jpg", :tags => %w(birdbox two)),
+      subject.new(:id => 3, :title => "That #hashtag1 looks delicious", :type => "photo", :url => "http://www.example.com/baz.jpg", :tags => %w(birdbox three)),
+      subject.new(:id => 4, :title => "Tags #hashtag2 good", :type => "photo", :url => "http://www.example.com/biz.jpg", :tags => %w(birdbox-tokenizer three))
     ]
     subject.index.import(@items)
     subject.index.refresh
+  end
+  
+  it "must parse hashtags" do
+    r = subject.first
+    r.parse_hashtags.must_equal(['#hashtag1'])
   end
 
   it "must be persisted" do
