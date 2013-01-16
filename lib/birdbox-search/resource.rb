@@ -2,38 +2,40 @@ module Birdbox
   module Search
     class Resource
       include Tire::Model::Persistence
+      include Tire::Model::Search
+      include Tire::Model::Callbacks
 
       OPTIMUM_WIDTH = 220
       
       index_prefix ""
       index_name "resources"
+      document_type "resource"
 
-      validates_presence_of :source, :owner, :type, :url
-      #validates_format_of :height, :allow_nil => true, :with => /\d+/
-      #validates_format_of :width, :allow_nil => true, :with => /\d+/
+      # NOTE: mappings are only applied when calling Resource.create_elasticsearch_index.  Using
+      # Resource.index.create will create a generic index with no mappings.
+      mapping do
+        property :provider,         :type => 'string',  :index => 'not_analyzed'
+        property :external_id,      :type => 'string',  :index => 'not_analyzed'
+        property :owner_uid,        :type => 'string',  :index => 'not_analyzed'
+        property :owner_nickname,   :type => 'string',  :index => 'not_analyzed'
+        property :title,            :type => 'string',  :index => 'analyzed',     :analyzer => 'standard'
+        property :url,              :type => 'string',  :index => 'not_analyzed'
+        property :type,             :type => 'string',  :index => 'not_analyzed'
+        property :tags,             :type => 'string',  :index => 'analyzed',     :analyzer => 'keyword', :default => [ ]
+        property :height,           :type => 'integer', :index => 'no'
+        property :width,            :type => 'integer', :index => 'no'
+        property :uploaded_at,      :type => 'date',    :index => 'not_analyzed'
+        property :taken_at,         :type => 'date',    :index => 'not_analyzed'
+        property :description,      :type => 'string',  :index => 'analyzed',     :analyzer => 'standard'
+        property :download_url,     :type => 'string',  :index => 'no'
+        property :thumbnail_url,    :type => 'string',  :index => 'no'
+        property :thumbnail_height, :type => 'integer', :index => 'no'
+        property :thumbnail_width,  :type => 'integer', :index => 'no'
+        property :html,             :type => 'string',  :index => 'no'
+        property :checksum,         :type => 'string',  :index => 'no'
+        property :owned,            :type => 'boolean', :index => 'not_analyzed'
+      end
 
-      # use this for resource id :id = "#{provider}:#{external_id}"
-      property :provider,         :type => 'string', :analyzer => 'keyword'
-      property :external_id,      :type => 'string', :index => 'not_indexed'
-      property :owner_uid,        :type => 'string', :analyzer => 'keyword'
-      property :owner_nickname,   :type => 'string', :analyzer => 'keyword'
-      property :title,            :type => 'string', :analyzer => 'snowball'
-      property :url,              :type => 'string', :index => 'not_indexed'
-      property :type,             :type => 'string', :analyzer => 'keyword'
-      property :tags,             :default => [ ], :index => 'keyword'
-      property :height,           :type => 'integer', :index => 'not_indexed'
-      property :width,            :type => 'integer', :index => 'not_indexed'
-      property :uploaded_at,      :type => 'date'
-      property :taken_at,         :type => 'date'
-      property :description,      :type => 'string', :analyzer => 'snowball'
-      property :download_uri,     :type => 'string', :index => 'not_indexed'
-      property :thumbnail_uri,    :type => 'string', :index => 'not_indexed'
-      property :thumbnail_height, :type => 'integer', :index => 'not_indexed'
-      property :thumbnail_width,  :type => 'integer', :index => 'not_indexed'
-      property :html,             :type => 'string', :index => 'not_indexed'
-      # ??
-      property :owned,            :type => 'boolean', :analyzer => 'keyword'
-      
       # parse out any hashtags from title and description and add to tag collection
       def parse_hashtags
         hashtags = self.title.to_s.downcase.scan(/\B#\w+/).uniq.each do |h|
@@ -48,28 +50,28 @@ module Birdbox
       
       def persist
         # if resource not in index or tag collection different then save
-        # return 0 or 1
+        # return 0 or 1 (if exists or not)
         ret = 0
-        index = Tire::Index.new(index_name)
-        id = #{self.provider}:#{self.external_id}"
-        resource = index.find(id)
+        id = "#{self.provider}:#{self.external_id}"
+        resource = self.find(id)
         Rails.logger.debug "presisting id=#{id} resource=#{resource.inspect} self={self.inspect}"
         if !resource or resource.tags != self.tags
           self[:id] = id
-          index.store self
+          self.store self
           ret = 1
-          index.refresh
+          self.index.refresh
         end
         ret
       end
       
-      def self.find(provider_uids, tags, since=nil, untihl=nil, count=20)
-        # providers = {'facebook' => ['70712020', '110001002359'], 'twitter' => ['11345923']}
-        # tags = array of tags
-        # since = timestamp - return all results > than since
-        # until = timestamp - return all results <= than until
-        # count = size of result set
-      end
+      # SOME CONVENIENCE STATIC WRAPPER I CAN CALL FORM THE PERCH API
+      # def self.find(provider_uids, tags, since=nil, untihl=nil, count=20)
+        # # providers = {'facebook' => ['70712020', '110001002359'], 'twitter' => ['11345923']}
+        # # tags = array of tags
+        # # since = timestamp - return all results > than since (uploaded_at)
+        # # until = timestamp - return all results <= than until (uploaded_at)
+        # # count = size of result set
+      # end
 
     end
 
