@@ -23,6 +23,20 @@ And then execute:
 
     $ bundle
 
+## Configuration
+
+Configuration options are passed through directly to the Tire gem.  The most common
+items that need to be configured are the url of the server and the logger.
+
+```ruby
+  Birdbox::Search.configure do
+    url 'http://search.example.com:9200'
+    # The logger supports any IO object.  The debug option is useful for
+    # development but should be disabled in production.
+    logger STDERR, :level => 'debug'
+  end
+```
+
 ## Usage
 
 ```ruby
@@ -77,6 +91,17 @@ And then execute:
   }
 ```
 
-This gem is basically just a wrapper around the excellent [Tire](https://github.com/karmi/tire) gem.
-The [annotated documentation](http://karmi.github.com/tire) of that gem is very useful.
+Since this gem is basically just a wrapper around the excellent [Tire](https://github.com/karmi/tire) gem,
+Tire's [annotated documentation](http://karmi.github.com/tire) of that gem is very useful.
+
+In addition to providing access to Tire's functionality, the gem also provides some convinience methods
+specific to our search index.  For example, to fetch all of the resources associated with a nest:
+
+```ruby
+  members = { :facebook => ['123', '456'], :twitter => ['789'] }
+  options = { :page => 1, :page_size => 25 }
+  results = Birdbox::Search::Nest.fetch(members, %w(foobar), options)
+  results.each { |result| puts result.my_field }
+```
+
 
