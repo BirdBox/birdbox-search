@@ -15,15 +15,15 @@ describe Birdbox::Search::Nest do
         :height => 640, :width => 480, :created_at => Time.now.utc),
 
       Resource.new(:id => 'facebook:2', :provider => "facebook", :external_id => "2",
-        :owner_uid => "100001", :owner_nickname => "alice", :title => "Bidwell Park",
-        :type => "photo", :description => "Enjoying a long hike in Bidwell Park.",
-        :url => "http://www.example.com/bidwell.jpg", :tags => %w(california),
-        :height => 640, :width => 480, :created_at => Time.now.utc),
-
-      Resource.new(:id => 'facebook:3', :provider => "facebook", :external_id => "3",
         :owner_uid => "100001", :owner_nickname => "alice", :title => "That looks delicious",
         :type => "photo", :description => "That's the best looking cheesebuger I've seen in quite a while",
         :url => "http://www.example.com/cheeseburger.jpg", :tags => %w(cheeseburger),
+        :height => 640, :width => 480, :created_at => Time.now.utc),
+
+      Resource.new(:id => 'facebook:3', :provider => "facebook", :external_id => "3",
+        :owner_uid => "100002", :owner_nickname => "bob", :title => "Bidwell Park",
+        :type => "photo", :description => "Enjoying a long hike in Bidwell Park.",
+        :url => "http://www.example.com/bidwell.jpg", :tags => %w(california),
         :height => 640, :width => 480, :created_at => Time.now.utc),
 
       Resource.new(:id => 'twitter:1', :provider => "twitter", :external_id => "1",
@@ -37,17 +37,40 @@ describe Birdbox::Search::Nest do
         :type => "photo", :description => "Look at that, not a cloud in the sky.",
         :url => "http://www.example.com/golden_gate.jpg", :tags => %w(california),
         :height => 640, :width => 480, :created_at => Time.now.utc),
+
+      Resource.new(:id => 'twitter:3', :provider => "twitter", :external_id => "3",
+        :owner_uid => "200002", :owner_nickname => "bob", :title => "Hearst Castle",
+        :type => "photo", :description => "Damn, nice crib.",
+        :url => "http://www.example.com/hearst_castle.jpg", :tags => %w(california),
+        :height => 640, :width => 480, :created_at => Time.now.utc),
+
     ]
     Resource.index.import(@items)
     Resource.index.refresh
   end
   
-  it "must be able to retrieve the resources belonging to a nest" do
-    members = { :facebook => ['100001'], :twitter => ['200001', '200002'] }
-    tags = %w(california)
-    nest = Nest.new(members, tags)
-    results = nest.fetch
-    results.count.must_equal(4)
+  it "must be able to fetch resources for a single tag and a single owner" do
+    results = Nest.fetch({:facebook => ['100001']}, ['california'])
+    results.count.must_equal(1)
+  end
+
+  it "must be able to fetch resources for a single tag and multiple owners" do
+    results = Nest.fetch({:facebook => ['100001', '100002'], :twitter => ['200001']}, ['california'])
+    results.count.must_equal(3)
+  end
+
+  it "must be able to fetch resources for multiple tags" do
+    results = Nest.fetch({:facebook => ['100001', '100002']}, %w(cheeseburger california))
+    results.count.must_equal(3)
+  end
+
+  it "must be able to paginate results" do
+    members = { :facebook => ['100001', '100002'], :twitter => ['200001', '200002'] }
+    tags = %w(california cheeseburger)
+    results = Nest.fetch(members, tags, :page => 1, :page_size => 5)
+    results.count.must_equal(5)
+    results = Nest.fetch(members, tags, :page => 2, :page_size => 5)
+    results.count.must_equal(1)
   end
 
 end

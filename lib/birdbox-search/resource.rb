@@ -41,7 +41,7 @@ module Birdbox
 
       OPTIMUM_WIDTH = 220
 
-      # NOTE: mappings are only applied when calling Resource.create_elasticsearch_index.  Using
+      # mappings are only applied when calling Resource.create_elasticsearch_index.  Using
       # Resource.index.create will create a generic index with no mappings.
       # parse out any hashtags from title and description and add to tag collection
       def parse_hashtags
