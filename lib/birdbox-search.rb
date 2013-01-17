@@ -5,6 +5,10 @@ require "birdbox-search/nest"
 
 module Birdbox
   module Search
-    # Your code goes here...
+    
+    def Search.configure(&block)
+      Tire::Configuration.class_eval(&block)
+    end
+  
   end
 end
