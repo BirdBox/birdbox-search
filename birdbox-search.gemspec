@@ -16,6 +16,7 @@ Gem::Specification.new do |gem|
   gem.add_dependency "tire", "~> 0.5.4"
 
   gem.add_development_dependency "yard", "~> 0.8.3"
+  gem.add_development_dependency "redcarpet", "~> 2.2.2"
 
   gem.files         = `git ls-files`.split($/)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
