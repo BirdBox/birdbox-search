@@ -3,9 +3,11 @@ module Birdbox
 
     module Searchable
       def self.included(base)
-        p "Included in #{base}"
-
         base.class_eval do
+          index_prefix ""
+          index_name "resources"
+          document_type "resource"
+
           mapping do
               property :provider,         :type => 'string',  :index => 'not_analyzed'
               property :external_id,      :type => 'string',  :index => 'not_analyzed'
@@ -39,10 +41,6 @@ module Birdbox
 
       OPTIMUM_WIDTH = 220
 
-      index_prefix ""
-      index_name "resources"
-      document_type "resource"
-
       # NOTE: mappings are only applied when calling Resource.create_elasticsearch_index.  Using
       # Resource.index.create will create a generic index with no mappings.
       # parse out any hashtags from title and description and add to tag collection
@@ -54,44 +52,27 @@ module Birdbox
           h.gsub!('#', '').strip!
         end
         if self.tags
-        self.tags.concat hashtags.uniq
-        self.tags = self.tags.uniq
+          self.tags.concat hashtags.uniq
+          self.tags = self.tags.uniq
         else
-        self.tags = hashtags.uniq
+          self.tags = hashtags.uniq
         end
       end
 
       def persist
         # if resource not in index or tag collection different then save
-        # return 0 or 1 (if exists or not)
+        # return 0 or 1 (if exists or not) - caller will bump resource count
         ret = 0
         self.id = "#{self.provider}:#{self.external_id}"
 
         resource = Resource.find(self.id)
-        # Won't work outside of a Rails context. For example, it breaks the tests.  Tire has
-        # a way to configure loggers and I will look into that.  Use 'puts' for now or comment
-        # out the line before checking in the code.
-        # puts "presisting id=#{self.id} resource=#{resource.inspect} self={self.inspect}"
         if !resource or resource.tags != self.tags
-        self.save
-        ret = 1
-        # No need to call this.  The index will refresh almost immediately and forcing it
-        # will cause performance issues.
-        #self.index.refresh
+          self.save
+          ret = 1
         end
         ret
       end
-
-    # SOME CONVENIENCE STATIC WRAPPER I CAN CALL FORM THE PERCH API
-    # def self.find(provider_uids, provider_uids_exempted, tags, since=nil, untihl=nil, count=20)
-    # # provider_uids = {'facebook' => ['70712020', '110001002359'], 'twitter' => ['11345923']}
-    # # provider_uids_exempted - same data structure as provider_uids - photos/videos 'removed' from a nest
-    # # tags = array of tags
-    # # since = timestamp - return all results > than since (uploaded_at)
-    # # until = timestamp - return all results <= than until (uploaded_at)
-    # # count = size of result set
-    # end
-
+      
     end
 
   end
