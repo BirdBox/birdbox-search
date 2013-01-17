@@ -63,7 +63,8 @@ module Birdbox
         # out the line before checking in the code.
         # puts "presisting id=#{self.id} resource=#{resource.inspect} self={self.inspect}"
         if !resource or resource.tags != self.tags
-          self.save!
+          self.save
+          puts self.errors.inspect
           ret = 1
           # No need to call this.  The index will refresh almost immediately and forcing it
           # will cause performance issues.
