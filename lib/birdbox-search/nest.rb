@@ -1,6 +1,9 @@
 module Birdbox
   module Search
 
+    # The `Nest` class represents a collection of resources, tied together by
+    # one or more hashtags and a collection of members who contribute resources
+    # to the nest.
     class Nest
 
       # Fetches all resources associated with a nest. A resource belongs to a
@@ -18,7 +21,6 @@ module Birdbox
       # @param [Array] tags an array of string tokens representing tags.
       # @param [Hash] options a hash of optional parameters.
       # @return [Tire::Results::Collection] an iterable collection of results
-      #
       def self.fetch(owners, tags, options = { })
         opts = {
           :page       => 1,    # the pagination index
@@ -51,7 +53,6 @@ module Birdbox
       #   is an array of user ids specific to that provider.
       # @param [Array] tags an array of string tokens representing tags.
       # @return [Nest] a nest object
-      #
       def initialize(owners, tags)
         @owners = owners || { }
         @tags = tags || [ ]
@@ -69,7 +70,6 @@ module Birdbox
       # 
       # @param [Hash] options a hash of optional parameters.
       # @return [Tire::Results::Collection] an iterable collection of results
-      #
       def fetch(options={ })
         Nest.fetch(self.owners, self.tags)
       end
