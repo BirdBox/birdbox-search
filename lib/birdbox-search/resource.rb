@@ -32,7 +32,6 @@ module Birdbox
         property :thumbnail_height, :type => 'integer', :index => 'no'
         property :thumbnail_width,  :type => 'integer', :index => 'no'
         property :html,             :type => 'string',  :index => 'no'
-        property :checksum,         :type => 'string',  :index => 'no'
         property :owned,            :type => 'boolean', :index => 'not_analyzed'
       end
 
@@ -62,9 +61,9 @@ module Birdbox
         # Won't work outside of a Rails context. For example, it breaks the tests.  Tire has
         # a way to configure loggers and I will look into that.  Use 'puts' for now or comment
         # out the line before checking in the code.
-        #Rails.logger.debug "presisting id=#{self.id} resource=#{resource.inspect} self={self.inspect}"
+        # puts "presisting id=#{self.id} resource=#{resource.inspect} self={self.inspect}"
         if !resource or resource.tags != self.tags
-          self.save
+          self.save!
           ret = 1
           # No need to call this.  The index will refresh almost immediately and forcing it
           # will cause performance issues.
