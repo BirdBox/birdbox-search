@@ -1,7 +1,9 @@
 module Birdbox
   module Search
 
+    # A module encapsulating the properties and mappings of the `resources` index.
     module Searchable
+      # Set the index properties and mappings of the class including this module.
       def self.included(base)
         base.class_eval do
           index_prefix ""
@@ -33,6 +35,9 @@ module Birdbox
       end
     end
 
+    # The Resource class wraps an Elasticsearch index by the same name. Note that the 
+    # mappings are only applied when calling Resource.create_elasticsearch_index.
+    # Using Resource.index.create will create a generic index with no mappings.
     class Resource
       include Tire::Model::Persistence
       include Tire::Model::Search
@@ -41,9 +46,7 @@ module Birdbox
 
       OPTIMUM_THUMBNAIL_WIDTH = 220
 
-      # mappings are only applied when calling Resource.create_elasticsearch_index.  Using
-      # Resource.index.create will create a generic index with no mappings.
-      # parse out any hashtags from title and description and add to tag collection
+      # Parses hashtags from the resource's title and description attribute.
       def parse_hashtags
         hashtags = self.title.to_s.downcase.scan(/\B#\w+/).uniq.each do |h|
           h.gsub!('#', '').strip!
@@ -59,12 +62,15 @@ module Birdbox
         end
       end
 
+      # Only saves a resource if it does not already exist or if its tags have
+      # been modified. Updating a search index is an expensive operation and
+      # since we are constantly rescanning resources, this method should help
+      # migigate the impact on search performance.
+      #
+      # @return [Integer] 1 if the document was updated or 0 if it was not
       def persist
-        # if resource not in index or tag collection different then save
-        # return 0 or 1 (if exists or not) - caller will bump resource count
         ret = 0
         self.id = "#{self.provider}:#{self.external_id}"
-
         resource = Resource.find(self.id)
         if !resource or resource.tags != self.tags
           self.save
