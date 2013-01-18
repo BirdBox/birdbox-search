@@ -46,6 +46,11 @@ module Birdbox
 
       # When a 3rd party (such as facebook) yields multiple thumbnails pick the one that is closest (larger preferred) to the desired width
       OPTIMUM_THUMBNAIL_WIDTH = 220
+      
+      def initialize(params={})
+        self.tags = []
+        super(params)
+      end
 
       # Parses hashtags from the resource's title and description attribute.
       def parse_hashtags
