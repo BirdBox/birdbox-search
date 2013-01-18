@@ -39,7 +39,7 @@ module Birdbox
       include Tire::Model::Callbacks
       include Birdbox::Search::Searchable
 
-      OPTIMUM_WIDTH = 220
+      OPTIMUM_THUMBNAIL_WIDTH = 220
 
       # mappings are only applied when calling Resource.create_elasticsearch_index.  Using
       # Resource.index.create will create a generic index with no mappings.
