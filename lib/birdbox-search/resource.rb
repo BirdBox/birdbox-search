@@ -44,6 +44,7 @@ module Birdbox
       include Tire::Model::Callbacks
       include Birdbox::Search::Searchable
 
+      # When a 3rd party (such as facebook) yields multiple thumbnails pick the one that is closest (larger preferred) to the desired width
       OPTIMUM_THUMBNAIL_WIDTH = 220
 
       # Parses hashtags from the resource's title and description attribute.
