@@ -4,7 +4,6 @@ describe Birdbox::Search::Resource do
   subject { Birdbox::Search::Resource }
 
   Birdbox::Search.configure do
-    environment 'test'
     url 'http://localhost:9200'
     #logger STDERR, :debug => true
   end

@@ -5,7 +5,6 @@ describe Birdbox::Search::Nest do
   Nest = Birdbox::Search::Nest
 
   Birdbox::Search.configure do
-    environment 'test'
     url 'http://localhost:9200'
     #logger STDERR, :debug => true
   end
