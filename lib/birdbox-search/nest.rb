@@ -23,10 +23,12 @@ module Birdbox
       # @return [Tire::Results::Collection] an iterable collection of results
       def self.fetch(owners, tags, options = { })
         opts = {
-          :page       => 1,    # the pagination index
-          :page_size  => 10,   # number of items to return per page
-          :since      => nil,  # default to the beginning of time
-          :until      => nil   # default to the end of time
+          :sort_by        => nil,   # sort field
+          :sort_direction => 'asc', # sort direction            
+          :page           => 1,     # the pagination index
+          :page_size      => 10,    # number of items to return per page
+          :since          => nil,   # default to the beginning of time
+          :until          => nil    # default to the end of time
         }.merge(options)
 
         tq = tags.map { |t| "tags:\"#{t}\"" }.join(" OR ") 
@@ -37,6 +39,11 @@ module Birdbox
           search.query { |query|
             query.string q
           }
+
+          if opts[:sort_by]
+            search.sort { by opts[:sort_by], opts[:sort_direction] || 'asc' }
+          end
+
           page = opts[:page].to_i
           page_size = opts[:page_size].to_i
           search.from (page - 1) * page_size

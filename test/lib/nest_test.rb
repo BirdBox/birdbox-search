@@ -24,31 +24,31 @@ describe Birdbox::Search::Nest do
         :owner_uid => "100001", :owner_nickname => "alice", :title => "That looks delicious",
         :type => "photo", :description => "That's the best looking cheesebuger I've seen in quite a while",
         :url => "http://www.example.com/cheeseburger.jpg", :tags => %w(cheeseburger),
-        :height => 640, :width => 480, :created_at => Time.now.utc),
+        :height => 640, :width => 480, :created_at => Time.now.utc + 1),
 
       Resource.new(:id => 'facebook:3', :provider => "facebook", :external_id => "3",
         :owner_uid => "100002", :owner_nickname => "bob", :title => "Bidwell Park",
         :type => "photo", :description => "Enjoying a long hike in Bidwell Park.",
         :url => "http://www.example.com/bidwell.jpg", :tags => %w(california),
-        :height => 640, :width => 480, :created_at => Time.now.utc),
+        :height => 640, :width => 480, :created_at => Time.now.utc + 2),
 
       Resource.new(:id => 'twitter:1', :provider => "twitter", :external_id => "1",
         :owner_uid => "200001", :owner_nickname => "alice", :title => "The Golden Gate",
         :type => "photo", :description => "Look at that, not a cloud in the sky.",
         :url => "http://www.example.com/golden_gate.jpg", :tags => %w(california),
-        :height => 640, :width => 480, :created_at => Time.now.utc),
+        :height => 640, :width => 480, :created_at => Time.now.utc + 3),
 
       Resource.new(:id => 'twitter:2', :provider => "twitter", :external_id => "2",
         :owner_uid => "200002", :owner_nickname => "bob", :title => "The Golden Gate",
         :type => "photo", :description => "Look at that, not a cloud in the sky.",
         :url => "http://www.example.com/golden_gate.jpg", :tags => %w(california),
-        :height => 640, :width => 480, :created_at => Time.now.utc),
+        :height => 640, :width => 480, :created_at => Time.now.utc + 4),
 
       Resource.new(:id => 'twitter:3', :provider => "twitter", :external_id => "3",
         :owner_uid => "200002", :owner_nickname => "bob", :title => "Hearst Castle",
         :type => "photo", :description => "Damn, nice crib.",
         :url => "http://www.example.com/hearst_castle.jpg", :tags => %w(california),
-        :height => 640, :width => 480, :created_at => Time.now.utc),
+        :height => 640, :width => 480, :created_at => Time.now.utc + 5),
 
     ]
     Resource.index.import(@items)
@@ -77,6 +77,14 @@ describe Birdbox::Search::Nest do
     results.count.must_equal(5)
     results = Nest.fetch(members, tags, :page => 2, :page_size => 5)
     results.count.must_equal(1)
+  end
+
+  it "must be able to sort results" do
+    members = { :facebook => ['100001', '100002'], :twitter => ['200001', '200002'] }
+    tags = %w(california cheeseburger)
+    ascending = Nest.fetch(members, tags, :sort_by => 'created_at').map { |r| r.created_at }
+    descending = Nest.fetch(members, tags, :sort_by => 'created_at', :sort_direction => 'desc').map { |r| r.created_at }
+    descending.to_a.must_equal(ascending.to_a.reverse)
   end
 
 end
