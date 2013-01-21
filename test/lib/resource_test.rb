@@ -3,7 +3,14 @@ require_relative '../test_helper'
 describe Birdbox::Search::Resource do
   subject { Birdbox::Search::Resource }
 
+  Birdbox::Search.configure do
+    environment 'test'
+    url 'http://localhost:9200'
+    #logger STDERR, :debug => true
+  end
+
   before do
+
     subject.index.delete
     subject.create_elasticsearch_index
     @items = [ 
