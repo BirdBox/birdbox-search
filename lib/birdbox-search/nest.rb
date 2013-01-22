@@ -12,7 +12,7 @@ module Birdbox
       #
       # @example
       #   members = { :facebook => ['123', '456'], :twitter => ['789'] }
-      #   options = { :page => 1, :page_size => 25 }
+      #   options = { :page => 1, :page_size => 25, :sort_by => 'created_at' }
       #   results = Birdbox::Search::Nest.fetch(members, %w(foobar), options)
       #   results.each { |result| puts result.my_field }
       # 
@@ -31,9 +31,16 @@ module Birdbox
           :until          => nil          # default to the end of time
         }.merge(options)
 
-        tq = tags.map { |t| "tags:\"#{t}\"" }.join(" OR ") 
-        mq = owners.map { |(k,v)| "(provider:\"#{k}\" AND (#{v.map{ |owner| "owner_uid:\"#{owner}\"" }.join(" OR ")}))" }.join(" OR ")
-        q = "(#{tq}) AND (#{mq})"
+        query_tags = tags.map { |t| "tags:\"#{t}\"" }.join(" OR ") 
+        query_owners = owners.map { |(k,v)| "(provider:\"#{k}\" AND (#{v.map{ |owner| "owner_uid:\"#{owner}\"" }.join(" OR ")}))" }.join(" OR ")
+        q = "(#{query_tags}) AND (#{query_owners})"
+
+        # Build the date range query if this request is time-bounded.
+        if opts[:since] or opts[:until]
+          from_date = opts[:since] || Time.at(0)
+          until_date = opts[:until] || Time.now.utc
+          q += " AND (created_at:[#{from_date.strftime("%Y-%m-%d")} TO #{until_date.strftime("%Y-%m-%d")}])"
+        end
 
         search = Tire.search(Birdbox::Search::Resource.index_name) { |search|
           search.query { |query|

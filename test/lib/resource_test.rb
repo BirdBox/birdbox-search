@@ -91,20 +91,22 @@ describe Birdbox::Search::Resource do
     r.size.must_equal(@items.count { |x| x.tags.include?("one") or x.tags.include?("two") })
   end
 
-  it "must store records that use the 'persist' method" do
+  it "must ensure that the resource is persisted correctly" do
     r = subject.new
     r.provider = 'facebook'
     r.external_id = '123'
     r.type = 'photo'
     r.url = 'http://www.example.com/cant-be-unseen.jpg'
-    r.persist.must_equal(1)
-    subject.find([r.provider, r.external_id].join(':')).wont_be_nil
+    r.save
+    result = subject.find([r.provider, r.external_id].join(':'))
+    result.wont_be_nil
+    result.created_at.wont_be_nil
   end
 
-  it "must not update existing records" do
+  it "must not update existing records when using the 'persist' method" do
     r = subject.find('facebook:1')
     r.title = 'booya!'
-    r.persist.must_equal(0)
+    r.save.updated?.must_equal(false)
     subject.find(r.id).title.wont_equal(r.title)
   end
 
@@ -112,7 +114,7 @@ describe Birdbox::Search::Resource do
     r = subject.find('facebook:1')
     r.title = 'booya!'
     r.tags << "danger"
-    r.persist.must_equal(1)
+    r.save.updated?.must_equal(true)
     subject.find(r.id).title.must_equal(r.title)
   end
 

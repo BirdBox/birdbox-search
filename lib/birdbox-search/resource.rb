@@ -44,10 +44,14 @@ module Birdbox
       include Tire::Model::Callbacks
       include Birdbox::Search::Searchable
 
+      before_save :before_save
+      after_save :after_save
+
       # When a 3rd party (such as facebook) yields multiple thumbnails pick the one that is closest (larger preferred) to the desired width
       OPTIMUM_THUMBNAIL_WIDTH = 220
       
       def initialize(params={})
+        @_updated = false
         self.tags = []
         super(params)
       end
@@ -68,23 +72,36 @@ module Birdbox
         end
       end
 
+      #
+      def updated?
+        return @_updated
+      end
+
+
+      private
+
       # Only saves a resource if it does not already exist or if its tags have
       # been modified. Updating a search index is an expensive operation and
       # since we are constantly rescanning resources, this method should help
       # migigate the impact on search performance.
-      #
-      # @return [Integer] 1 if the document was updated or 0 if it was not
-      def persist
-        ret = 0
+      def before_save
         self.id = "#{self.provider}:#{self.external_id}"
+        @_updated = false
         resource = Resource.find(self.id)
-        if !resource or resource.tags != self.tags
-          self.save
-          ret = 1
+        if resource and resource.tags == self.tags
+          return false
         end
-        ret
+        self.created_at = (self.created_at || Time.now).utc
+        true
       end
-      
+
+
+      # Set the @_updated flag to signal that the save operation caused
+      # the index to be updated.
+      def after_save
+        @_updated = true
+      end
+
     end
 
   end
