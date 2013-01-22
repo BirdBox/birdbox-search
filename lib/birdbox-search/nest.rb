@@ -39,7 +39,7 @@ module Birdbox
         if opts[:since] or opts[:until]
           from_date = opts[:since] || Time.at(0)
           until_date = opts[:until] || Time.now.utc
-          q += " AND (created_at:[#{from_date.strftime("%Y-%m-%d")} TO #{until_date.strftime("%Y-%m-%d")}])"
+          q += " AND (created_at:[#{from_date.strftime("%Y-%m-%dT%H:%M:%S")} TO #{until_date.strftime("%Y-%m-%dT%H:%M:%S")}])"
         end
 
         search = Tire.search(Birdbox::Search::Resource.index_name) { |search|
@@ -48,7 +48,7 @@ module Birdbox
           }
 
           if opts[:sort_by]
-            search.sort { by opts[:sort_by], opts[:sort_direction] || 'asc' }
+            search.sort { by opts[:sort_by], opts[:sort_direction] || 'desc' }
           end
 
           page = opts[:page].to_i
