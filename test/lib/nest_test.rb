@@ -82,8 +82,8 @@ describe Birdbox::Search::Nest do
   it "must be able to sort results" do
     members = { :facebook => ['100001', '100002'], :twitter => ['200001', '200002'] }
     tags = %w(california cheeseburger)
-    ascending = Nest.fetch(members, tags, :sort_by => 'created_at').map { |r| r.created_at }
-    descending = Nest.fetch(members, tags, :sort_by => 'created_at', :sort_direction => 'desc').map { |r| r.created_at }
+    ascending = Nest.fetch(members, tags, :sort_by => :created_at, :sort_direction => 'asc').map { |r| r.created_at }
+    descending = Nest.fetch(members, tags, :sort_by => :created_at, :sort_direction => 'desc').map { |r| r.created_at }
     descending.to_a.must_equal(ascending.to_a.reverse)
   end
 
