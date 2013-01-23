@@ -11,25 +11,31 @@ module Birdbox
           document_type "resource"
 
           mapping do
-              property :provider,         :type => 'string',  :index => 'not_analyzed'
-              property :external_id,      :type => 'string',  :index => 'not_analyzed'
-              property :owner_uid,        :type => 'string',  :index => 'not_analyzed'
-              property :owner_nickname,   :type => 'string',  :index => 'not_analyzed'
-              property :title,            :type => 'string',  :index => 'analyzed',     :analyzer => 'standard'
-              property :url,              :type => 'string',  :index => 'not_analyzed'
-              property :type,             :type => 'string',  :index => 'not_analyzed'
-              property :tags,             :type => 'string',  :index => 'analyzed',     :analyzer => 'keyword', :default => [ ]
-              property :height,           :type => 'integer', :index => 'no'
-              property :width,            :type => 'integer', :index => 'no'
-              property :created_at,      :type => 'date',    :index => 'not_analyzed'
-              property :taken_at,         :type => 'date',    :index => 'not_analyzed'
-              property :description,      :type => 'string',  :index => 'analyzed',     :analyzer => 'standard'
-              property :download_url,     :type => 'string',  :index => 'no'
-              property :thumbnail_url,    :type => 'string',  :index => 'no'
-              property :thumbnail_height, :type => 'integer', :index => 'no'
-              property :thumbnail_width,  :type => 'integer', :index => 'no'
-              property :html,             :type => 'string',  :index => 'no'
-              property :owned,            :type => 'boolean', :index => 'not_analyzed'
+              property :provider,               :type => 'string',  :index => 'not_analyzed'
+              property :external_id,            :type => 'string',  :index => 'not_analyzed'
+              property :owner_uid,              :type => 'string',  :index => 'not_analyzed'
+              property :owner_nickname,         :type => 'string',  :index => 'not_analyzed'
+              property :title,                  :type => 'string',  :index => 'analyzed',     :analyzer => 'standard'
+              property :url,                    :type => 'string',  :index => 'not_analyzed'
+              property :type,                   :type => 'string',  :index => 'not_analyzed'
+              property :tags,                   :type => 'string',  :index => 'analyzed',     :analyzer => 'keyword', :default => [ ]
+              property :height,                 :type => 'integer', :index => 'no'
+              property :width,                  :type => 'integer', :index => 'no'
+              property :created_at,             :type => 'date',    :index => 'not_analyzed'
+              property :taken_at,               :type => 'date',    :index => 'not_analyzed'
+              property :description,            :type => 'string',  :index => 'analyzed',     :analyzer => 'standard'
+              property :download_url,           :type => 'string',  :index => 'no'
+              property :thumbnail_url_small,    :type => 'string',  :index => 'no'
+              property :thumbnail_height_small, :type => 'integer', :index => 'no'
+              property :thumbnail_width_small,  :type => 'integer', :index => 'no'
+              property :thumbnail_url_medium,   :type => 'string',  :index => 'no'
+              property :thumbnail_height_medium,:type => 'integer', :index => 'no'
+              property :thumbnail_width_medium, :type => 'integer', :index => 'no'
+              property :thumbnail_url_large,    :type => 'string',  :index => 'no'
+              property :thumbnail_height_large, :type => 'integer', :index => 'no'
+              property :thumbnail_width_large,  :type => 'integer', :index => 'no'
+              property :html,                   :type => 'string',  :index => 'no'
+              property :owned,                  :type => 'boolean', :index => 'not_analyzed'
             end
         end
       end
@@ -48,7 +54,9 @@ module Birdbox
       after_save :after_save
 
       # When a 3rd party (such as facebook) yields multiple thumbnails pick the one that is closest (larger preferred) to the desired width
-      OPTIMUM_THUMBNAIL_WIDTH = 220
+      OPTIMUM_THUMBNAIL_WIDTH_SMALL = 70
+      OPTIMUM_THUMBNAIL_WIDTH_MEDIUM = 270
+      OPTIMUM_THUMBNAIL_WIDTH_LARGE = 370
       
       def initialize(params={})
         @_updated = false
