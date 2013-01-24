@@ -23,7 +23,7 @@ module Birdbox
       # @return [Tire::Results::Collection] an iterable collection of results
       def self.fetch(owners, tags, options = { })
         opts = {
-          :sort_by        => :created_at, # sort field
+          :sort_by        => :uploaded_at, # sort field
           :sort_direction => 'desc',      # sort direction            
           :page           => 1,           # the pagination index
           :page_size      => 10,          # number of items to return per page
@@ -39,7 +39,7 @@ module Birdbox
         if opts[:since] or opts[:until]
           from_date = opts[:since] || Time.at(0)
           until_date = opts[:until] || Time.now.utc
-          q += " AND (created_at:[#{from_date.strftime("%Y-%m-%dT%H:%M:%S")} TO #{until_date.strftime("%Y-%m-%dT%H:%M:%S")}])"
+          q += " AND (updated_at:[#{from_date.strftime("%Y-%m-%dT%H:%M:%S")} TO #{until_date.strftime("%Y-%m-%dT%H:%M:%S")}])"
         end
 
         search = Tire.search(Birdbox::Search::Resource.index_name) { |search|

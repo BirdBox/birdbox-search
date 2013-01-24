@@ -15,6 +15,7 @@ module Birdbox
               property :external_id,            :type => 'string',  :index => 'not_analyzed'
               property :owner_uid,              :type => 'string',  :index => 'not_analyzed'
               property :owner_nickname,         :type => 'string',  :index => 'not_analyzed'
+              property :owner_birdbox_nickname, :type => 'string',  :index => 'not_analyzed'
               property :title,                  :type => 'string',  :index => 'analyzed',     :analyzer => 'standard'
               property :url,                    :type => 'string',  :index => 'not_analyzed'
               property :type,                   :type => 'string',  :index => 'not_analyzed'
@@ -22,6 +23,8 @@ module Birdbox
               property :height,                 :type => 'integer', :index => 'no'
               property :width,                  :type => 'integer', :index => 'no'
               property :created_at,             :type => 'date',    :index => 'not_analyzed'
+              property :updated_at,             :type => 'date',    :index => 'not_analyzed'
+              property :uploaded_at,            :type => 'date',    :index => 'not_analyzed'
               property :taken_at,               :type => 'date',    :index => 'not_analyzed'
               property :description,            :type => 'string',  :index => 'analyzed',     :analyzer => 'standard'
               property :download_url,           :type => 'string',  :index => 'no'
@@ -100,6 +103,7 @@ module Birdbox
           return false
         end
         self.created_at = (self.created_at || Time.now).utc
+        self.updated_at = Time.now.utc
         true
       end
 
