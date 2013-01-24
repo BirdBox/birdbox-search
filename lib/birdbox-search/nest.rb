@@ -12,7 +12,7 @@ module Birdbox
       #
       # @example
       #   members = { :facebook => ['123', '456'], :twitter => ['789'] }
-      #   options = { :page => 1, :page_size => 25, :sort_by => 'created_at' }
+      #   options = { :page => 1, :page_size => 25, :sort_by => 'uploaded_at' }
       #   results = Birdbox::Search::Nest.fetch(members, %w(foobar), options)
       #   results.each { |result| puts result.my_field }
       # 
@@ -23,12 +23,12 @@ module Birdbox
       # @return [Tire::Results::Collection] an iterable collection of results
       def self.fetch(owners, tags, options = { })
         opts = {
-          :sort_by        => :uploaded_at, # sort field
-          :sort_direction => 'desc',      # sort direction            
-          :page           => 1,           # the pagination index
-          :page_size      => 10,          # number of items to return per page
-          :since          => nil,         # default to the beginning of time
-          :until          => nil          # default to the end of time
+          :sort_by        => :uploaded_at,  # sort field
+          :sort_direction => 'desc',        # sort direction            
+          :page           => 1,             # the pagination index
+          :page_size      => 10,            # number of items to return per page
+          :since          => nil,           # default to the beginning of time
+          :until          => nil            # default to the end of time
         }.merge(options)
 
         query_tags = tags.map { |t| "tags:\"#{t}\"" }.join(" OR ") 
