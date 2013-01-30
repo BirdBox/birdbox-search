@@ -60,7 +60,24 @@ module Birdbox
       OPTIMUM_THUMBNAIL_WIDTH_SMALL = 70
       OPTIMUM_THUMBNAIL_WIDTH_MEDIUM = 270
       OPTIMUM_THUMBNAIL_WIDTH_LARGE = 370
-      
+
+
+      # Looks up a user's existing tags and returns a unique list (including 
+      # the number of times the tag was found, sorted alphabetically.
+      #
+      # @param [String] uid the user's id
+      # @return [Array] a list of tags and the associated count
+      #
+      def self.find_unique_user_tags(uid)
+        Resource.search {
+          query { string "owner_uid:#{uid}" }
+          facet('tags') { terms :tags, order: 'term' }
+        }.facets['tags']['terms'].map do |f|
+          [f['term'], f['count']]
+        end
+      end
+
+      # Default constructor
       def initialize(params={})
         @_updated = false
         self.tags = []
