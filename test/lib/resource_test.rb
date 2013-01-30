@@ -119,7 +119,7 @@ describe Birdbox::Search::Resource do
     subject.find(r.id).title.must_equal(r.title)
   end
 
-  it "must be able to return a unique list of tasks for a user" do
+  it "must be able to return a unique list of tags for a user" do
     r = subject.find_unique_user_tags("123456")
     r.count.must_equal(3)
     r[0].last.must_equal(2)
