@@ -21,6 +21,7 @@ describe Birdbox::Search::Resource do
 
       subject.new(:id => 'facebook:2', :provider => "facebook", :external_id => "2", 
         :title => "No stone left unturned", :type => "photo",
+        :owner_uid => "123456", :owner_nickname => "me", :title => "",
         :url => "http://www.example.com/bar.jpg", :tags => %w(birdbox two)),
 
       subject.new(:id => 'facebook:3', :provider => "facebook", :external_id => "3",
@@ -116,6 +117,13 @@ describe Birdbox::Search::Resource do
     r.tags << "danger"
     r.save.updated?.must_equal(true)
     subject.find(r.id).title.must_equal(r.title)
+  end
+
+  it "must be able to return a unique list of tags for a user" do
+    r = subject.find_unique_user_tags("123456")
+    r.count.must_equal(3)
+    r[0].last.must_equal(2)
+    r[1].first.must_equal('one')
   end
 
 end
