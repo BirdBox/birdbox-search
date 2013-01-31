@@ -15,6 +15,7 @@ module Birdbox
               property :external_id,            :type => 'string',  :index => 'not_analyzed'
               property :owner_uid,              :type => 'string',  :index => 'not_analyzed'
               property :owner_nickname,         :type => 'string',  :index => 'not_analyzed'
+              property :owner_avatar,           :type => 'string',  :index => 'not_analyzed'
               property :owner_birdbox_nickname, :type => 'string',  :index => 'not_analyzed'
               property :title,                  :type => 'string',  :index => 'analyzed',     :analyzer => 'standard'
               property :url,                    :type => 'string',  :index => 'not_analyzed'
