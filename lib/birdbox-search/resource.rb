@@ -9,37 +9,38 @@ module Birdbox
           index_prefix ""
           index_name "resources"
           document_type "resource"
-
           mapping do
-              property :provider,               :type => 'string',  :index => 'not_analyzed'
-              property :external_id,            :type => 'string',  :index => 'not_analyzed'
-              property :owner_uid,              :type => 'string',  :index => 'not_analyzed'
-              property :owner_nickname,         :type => 'string',  :index => 'not_analyzed'
-              property :owner_birdbox_nickname, :type => 'string',  :index => 'not_analyzed'
-              property :title,                  :type => 'string',  :index => 'analyzed',     :analyzer => 'standard'
-              property :url,                    :type => 'string',  :index => 'not_analyzed'
-              property :type,                   :type => 'string',  :index => 'not_analyzed'
-              property :tags,                   :type => 'string',  :index => 'analyzed',     :analyzer => 'keyword', :default => [ ]
-              property :height,                 :type => 'integer', :index => 'no'
-              property :width,                  :type => 'integer', :index => 'no'
-              property :created_at,             :type => 'date',    :index => 'not_analyzed'
-              property :updated_at,             :type => 'date',    :index => 'not_analyzed'
-              property :uploaded_at,            :type => 'date',    :index => 'not_analyzed'
-              property :taken_at,               :type => 'date',    :index => 'not_analyzed'
-              property :description,            :type => 'string',  :index => 'analyzed',     :analyzer => 'standard'
-              property :download_url,           :type => 'string',  :index => 'no'
-              property :thumbnail_url_small,    :type => 'string',  :index => 'no'
-              property :thumbnail_height_small, :type => 'integer', :index => 'no'
-              property :thumbnail_width_small,  :type => 'integer', :index => 'no'
-              property :thumbnail_url_medium,   :type => 'string',  :index => 'no'
-              property :thumbnail_height_medium,:type => 'integer', :index => 'no'
-              property :thumbnail_width_medium, :type => 'integer', :index => 'no'
-              property :thumbnail_url_large,    :type => 'string',  :index => 'no'
-              property :thumbnail_height_large, :type => 'integer', :index => 'no'
-              property :thumbnail_width_large,  :type => 'integer', :index => 'no'
-              property :html,                   :type => 'string',  :index => 'no'
-              property :owned,                  :type => 'boolean', :index => 'not_analyzed'
-            end
+            property :provider,               :type => 'string',  :index => 'not_analyzed'
+            property :external_id,            :type => 'string',  :index => 'not_analyzed'
+            property :owner_uid,              :type => 'string',  :index => 'not_analyzed'
+            property :owner_nickname,         :type => 'string',  :index => 'not_analyzed'
+            property :owner_birdbox_nickname, :type => 'string',  :index => 'not_analyzed'
+            property :album,                  :type => 'string',  :index => 'not_analyzed'
+            property :title,                  :type => 'string',  :index => 'analyzed',     :analyzer => 'standard'
+            property :url,                    :type => 'string',  :index => 'not_analyzed'
+            property :type,                   :type => 'string',  :index => 'not_analyzed'
+            property :tags,                   :type => 'string',  :index => 'not_analyzed', :default => [ ]
+            property :people,                 :type => 'string',  :index => 'not_analyzed', :default => [ ]
+            property :height,                 :type => 'integer', :index => 'no'
+            property :width,                  :type => 'integer', :index => 'no'
+            property :created_at,             :type => 'date',    :index => 'not_analyzed'
+            property :updated_at,             :type => 'date',    :index => 'not_analyzed'
+            property :uploaded_at,            :type => 'date',    :index => 'not_analyzed'
+            property :taken_at,               :type => 'date',    :index => 'not_analyzed'
+            property :description,            :type => 'string',  :index => 'analyzed',     :analyzer => 'standard'
+            property :download_url,           :type => 'string',  :index => 'no'
+            property :thumbnail_url_small,    :type => 'string',  :index => 'no'
+            property :thumbnail_height_small, :type => 'integer', :index => 'no'
+            property :thumbnail_width_small,  :type => 'integer', :index => 'no'
+            property :thumbnail_url_medium,   :type => 'string',  :index => 'no'
+            property :thumbnail_height_medium,:type => 'integer', :index => 'no'
+            property :thumbnail_width_medium, :type => 'integer', :index => 'no'
+            property :thumbnail_url_large,    :type => 'string',  :index => 'no'
+            property :thumbnail_height_large, :type => 'integer', :index => 'no'
+            property :thumbnail_width_large,  :type => 'integer', :index => 'no'
+            property :html,                   :type => 'string',  :index => 'no'
+            property :owned,                  :type => 'boolean', :index => 'not_analyzed'
+          end
         end
       end
     end
@@ -60,6 +61,22 @@ module Birdbox
       OPTIMUM_THUMBNAIL_WIDTH_SMALL = 70
       OPTIMUM_THUMBNAIL_WIDTH_MEDIUM = 270
       OPTIMUM_THUMBNAIL_WIDTH_LARGE = 370
+
+
+      # Looks up a user's existing tags and returns a unique list (including 
+      # the number of times the tag was found, sorted alphabetically.
+      #
+      # @param [String] uid the user's id
+      # @return [Array] a list of tags and the associated count
+      #
+      def self.find_unique_user_tags(uid)
+        Resource.search {
+          query { string "owner_uid:#{uid}" }
+          facet('tags') { terms :tags, order: 'term' }
+        }.facets['tags']['terms'].map do |f|
+          [f['term'], f['count']]
+        end
+      end
 
 
       # Looks up a user's existing tags and returns a unique list (including 
