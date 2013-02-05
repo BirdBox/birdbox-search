@@ -16,13 +16,13 @@ describe Birdbox::Search::Resource do
       subject.new(:id => 'facebook:1', :provider => "facebook", :external_id => "1",
         :owner_uid => "123456", :owner_nickname => "me", :title => "Purple #hashtag1 #hashtag2 sunset",
         :type => "photo", :description => "A purple sunset #hashtag1 off the coast of Isla Vista, CA",
-        :url => "http://www.example.com/foo.jpg", :tags => %w(birdbox one),
-        :height => 640, :width => 480, :created_at => Time.now.utc),
+        :url => "http://www.example.com/foo.jpg", :tags => %w(birdbox one), :people => ['facebook:111111',
+        'facebook:123123', 'facebook:222222'], :height => 640, :width => 480, :created_at => Time.now.utc),
 
       subject.new(:id => 'facebook:2', :provider => "facebook", :external_id => "2", 
         :title => "No stone left unturned", :type => "photo",
         :owner_uid => "123456", :owner_nickname => "me", :title => "",
-        :url => "http://www.example.com/bar.jpg", :tags => %w(birdbox two)),
+        :url => "http://www.example.com/bar.jpg", :tags => %w(birdbox two), :people => ['facebook:000000']),
 
       subject.new(:id => 'facebook:3', :provider => "facebook", :external_id => "3",
         :title => "That looks delicious", :type => "photo",
@@ -30,7 +30,7 @@ describe Birdbox::Search::Resource do
 
       subject.new(:id => 'facebook:4', :provider => "facebook", :external_id => "4",
         :title => "Tags good", :type => "photo", :url => "http://www.example.com/biz.jpg",
-        :tags => ['birdbox-tokenizer', 'three'])
+        :tags => ['birdbox-tokenizer', 'three'], :people => ['facebook:123123', 'facebook:999999'])
     ]
     subject.index.import(@items)
     subject.index.refresh
@@ -124,6 +124,15 @@ describe Birdbox::Search::Resource do
     r.count.must_equal(3)
     r[0].last.must_equal(2)
     r[1].first.must_equal('one')
+  end
+
+  it "must be able to find resources by a tagged persons id" do
+    r = subject.search { |search|
+      search.query { |query|
+        query.terms :people, ['facebook:123123']
+      }
+    }
+    r.size.must_equal(@items.count { |x| x.people.include?("facebook:123123")})
   end
 
 end

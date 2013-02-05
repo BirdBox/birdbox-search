@@ -14,56 +14,7 @@ describe Birdbox::Search::Nest do
   before do
     Resource.index.delete
     Resource.create_elasticsearch_index
-    @items = [ 
-      Resource.new(:id => 'facebook:1', :provider => "facebook", :external_id => "1",
-        :owner_uid => "100001", :owner_nickname => "alice", :title => "Purple sunset",
-        :type => "photo", :description => "A purple sunset off the coast of Isla Vista, CA",
-        :url => "http://www.example.com/isla_vista.jpg", :tags => %w(california),
-        :height => 640, :width => 480, :created_at => Time.parse("2013-01-01 00:02:14"),
-        :updated_at => Time.parse("2013-01-01 00:02:14"), :uploaded_at => Time.parse("2013-01-01 00:02:14"), 
-        :taken_at => Time.parse("2013-01-01 00:02:14")),
-
-      Resource.new(:id => 'facebook:2', :provider => "facebook", :external_id => "2",
-        :owner_uid => "100001", :owner_nickname => "alice", :title => "That looks delicious",
-        :type => "photo", :description => "That's the best looking cheesebuger I've seen in quite a while",
-        :url => "http://www.example.com/cheeseburger.jpg", :tags => %w(cheeseburger),
-        :height => 640, :width => 480, :created_at => Time.parse("2013-01-18 15:26:42"),
-        :updated_at => Time.parse("2013-01-18 15:26:42"), :uploaded_at => Time.parse("2013-01-18 15:26:42"), 
-        :taken_at => Time.parse("2013-01-18 15:26:42")),
-
-      Resource.new(:id => 'facebook:3', :provider => "facebook", :external_id => "3",
-        :owner_uid => "100002", :owner_nickname => "bob", :title => "Bidwell Park",
-        :type => "photo", :description => "Enjoying a long hike in Bidwell Park.",
-        :url => "http://www.example.com/bidwell.jpg", :tags => %w(california),
-        :height => 640, :width => 480, :created_at => Time.parse("2013-01-10 22:34:07"),
-        :updated_at => Time.parse("2013-01-10 22:34:07"), :uploaded_at => Time.parse("2013-01-10 22:34:07"), 
-        :taken_at => Time.parse("2013-01-10 22:34:07")),
-        
-      Resource.new(:id => 'twitter:1', :provider => "twitter", :external_id => "1",
-        :owner_uid => "200001", :owner_nickname => "alice", :title => "The Golden Gate",
-        :type => "photo", :description => "Look at that, not a cloud in the sky.",
-        :url => "http://www.example.com/golden_gate.jpg", :tags => %w(california),
-        :height => 640, :width => 480, :created_at => Time.parse("2013-01-02 13:04:11"),
-        :updated_at => Time.parse("2013-01-02 13:04:11"), :uploaded_at => Time.parse("2013-01-02 13:04:11"), 
-        :taken_at => Time.parse("2013-01-02 13:04:11")),
-
-      Resource.new(:id => 'twitter:2', :provider => "twitter", :external_id => "2",
-        :owner_uid => "200002", :owner_nickname => "bob", :title => "The Golden Gate",
-        :type => "photo", :description => "Look at that, not a cloud in the sky.",
-        :url => "http://www.example.com/golden_gate.jpg", :tags => %w(california),
-        :height => 640, :width => 480, :created_at => Time.parse("2012-12-05 9:23:56"),
-        :updated_at => Time.parse("2012-12-05 9:23:56"), :uploaded_at => Time.parse("2012-12-05 9:23:56"), 
-        :taken_at => Time.parse("2012-12-05 9:23:56")),
-        
-      Resource.new(:id => 'twitter:3', :provider => "twitter", :external_id => "3",
-        :owner_uid => "200002", :owner_nickname => "bob", :title => "Hearst Castle",
-        :type => "photo", :description => "Damn, nice crib.",
-        :url => "http://www.example.com/hearst_castle.jpg", :tags => %w(california),
-        :height => 640, :width => 480, :created_at => Time.parse("2012-11-15 16:12:41"),
-        :updated_at => Time.parse("2012-11-15 16:12:41"), :uploaded_at => Time.parse("2012-11-15 16:12:41"), 
-        :taken_at => Time.parse("2012-11-15 16:12:41")),
-    ]
-    Resource.index.import(@items)
+    Resource.index.import(Fixtures.resources)
     Resource.index.refresh
   end
   
@@ -108,6 +59,13 @@ describe Birdbox::Search::Nest do
     results.count.must_equal(2)
     results = Nest.fetch(members, tags, :from => Time.parse("2012-11-01 00:00:00"), :until => Time.parse("2012-11-31 23:59:59"))
     results.count.must_equal(1)
+  end
+
+  it "must be able to find all people tagged in the resources belonging to a nest" do
+    people = Nest.find_tagged_people({:facebook => ['100001', '100002']}, ['california'])
+    people.count.must_equal(3)
+    people[0].first.must_equal('facebook:000003')
+    people[0].last.must_equal(2)
   end
 
 end
