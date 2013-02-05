@@ -1,7 +1,5 @@
 module Birdbox
   module Search
-    # :stopdoc:
-    VERSION = "0.2.1"
-    # :startdoc:
+    VERSION = "0.2.4"
   end
 end
