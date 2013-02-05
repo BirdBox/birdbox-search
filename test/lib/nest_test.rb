@@ -53,11 +53,11 @@ describe Birdbox::Search::Nest do
   it "must support time-bounded queries" do
     members = { :facebook => ['100001', '100002'], :twitter => ['200001', '200002'] }
     tags = %w(california cheeseburger)
-    results = Nest.fetch(members, tags, :since => Time.parse("2013-01-01 00:00:00"))
+    results = Nest.fetch(members, tags, :since => Time.parse("2013-01-01 00:00:00").to_i)
     results.count.must_equal(4)
-    results = Nest.fetch(members, tags, :until => Time.parse("2012-12-31 23:59:59"))
+    results = Nest.fetch(members, tags, :until => Time.parse("2012-12-31 23:59:59").to_i)
     results.count.must_equal(2)
-    results = Nest.fetch(members, tags, :from => Time.parse("2012-11-01 00:00:00"), :until => Time.parse("2012-11-31 23:59:59"))
+    results = Nest.fetch(members, tags, :since => Time.parse("2012-12-01 00:00:00").to_i, :until => Time.parse("2012-12-31 23:59:59").to_i)
     results.count.must_equal(1)
   end
 
