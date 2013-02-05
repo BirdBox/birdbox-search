@@ -2,7 +2,7 @@ module Birdbox
   module Search
 
     # The `Nest` class represents a collection of resources, tied together by
-    # one or more hashtags and a collection of members who contribute resources
+    # one or more hashtags and a collection of owners who contribute resources
     # to the nest.
     class Nest
 
@@ -22,12 +22,12 @@ module Birdbox
 
       # Fetches all resources associated with a nest. A resource belongs to a
       # nest if its tag matches one or more of the nest's tags and is owned by
-      # one of the nest's members.
+      # one of the nest's owners.
       #
       # @example
-      #   members = { :facebook => ['123', '456'], :twitter => ['789'] }
+      #   owners = { :facebook => ['123', '456'], :twitter => ['789'] }
       #   options = { :page => 1, :page_size => 25, :sort_by => 'uploaded_at' }
-      #   results = Birdbox::Search::Nest.fetch(members, %w(foobar), options)
+      #   results = Birdbox::Search::Nest.fetch(owners, %w(foobar), options)
       #   results.each { |result| puts result.my_field }
       # 
       # @param [Hash] owners keys are made up of the provider names and the values
@@ -78,7 +78,7 @@ module Birdbox
       # provided owners and tags.
       #
       # @example
-      #   owners = { :facebook => ['123', '456'], :twitter => ['789'] }
+      #   owners = { :facebook => ['123', '456'] }
       #   people = Birdbox::Search::Nest.find_tagged_people(owners, %w(foobar))
       #   people.each { |p| puts "#{p[0]} was tagged #{p[1]} times }
       # 
@@ -113,10 +113,11 @@ module Birdbox
       end
 
 
-      # (see fetch)
+      # Fetches all resources associated with this nest instance. 
+      # 
       # @example
-      #   members = { :facebook => ['123', '456'], :twitter => ['789'] }
-      #   nest = Birdbox::Search::Nest.new(members, %w(foobar))
+      #   owners = { :facebook => ['123', '456'], :twitter => ['789'] }
+      #   nest = Birdbox::Search::Nest.new(owners, %w(foobar))
       #   results = nest.fetch(:page => 1, :page_size => 25)
       #   results.each { |result| puts result.my_field }
       # 
@@ -128,9 +129,14 @@ module Birdbox
       end
 
 
-      # (see find_tagged_people)
-      # @note This version of the uses the owners and tags of the instance and
-      #   and does not accept parameters.
+      # Finds all people tagged in the resources beloning to this nest instance.
+      #
+      # @example
+      #   owners = { :facebook => ['123', '456'] }
+      #   nest = Birdbox::Search::Nest.new(owners, %w(foobar))
+      #   people = nest.find_tagged_people()
+      #   people.each { |p| puts "#{p[0]} was tagged #{p[1]} times }
+      # @return (see find_tagged_people)
       #
       def find_tagged_people
         Nest.find_tagged_people(self.owners, self.tags)
