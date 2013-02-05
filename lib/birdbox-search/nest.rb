@@ -37,8 +37,8 @@ module Birdbox
 
         # Build the date range query if this request is time-bounded.
         if opts[:since] or opts[:until]
-          from_date = opts[:since] || Time.at(0)
-          until_date = opts[:until] || Time.now.utc
+          from_date = Time.at(opts[:since]) || Time.at(0)
+          until_date = Time.at(opts[:until]) || Time.now.utc
           q += " AND (updated_at:[#{from_date.strftime("%Y-%m-%dT%H:%M:%S")} TO #{until_date.strftime("%Y-%m-%dT%H:%M:%S")}])"
         end
 
