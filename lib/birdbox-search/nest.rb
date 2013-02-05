@@ -10,13 +10,25 @@ module Birdbox
       #
       # @param [Hash] owners keys are made up of the provider names and the values
       #   is an array of user ids specific to that provider.
-      # @param [Array] tags an array of string tokens representing tags.
+      # @param [Array] limit the results to the provided tags, which are simply an
+      #   array of string.
+      # @param [Hash] limit the results to the provided albums. The parameter is a
+      #   hash, using the service name (e.g facebook) as keys and an array of service 
+      #   ids as its values.
       # @return [String] a Lucene query string to be used against the Resources index
       #
-      def self.build_query_string(owners, tags)
-        query_tags = tags.map { |t| "tags:\"#{t}\"" }.join(" OR ") 
-        query_owners = owners.map { |(k,v)| "(provider:\"#{k}\" AND (#{v.map{ |owner| "owner_uid:\"#{owner}\"" }.join(" OR ")}))" }.join(" OR ")
-        "(#{query_tags}) AND (#{query_owners})"
+      def self.build_query_string(owners, tags, albums)
+        filters = [ ]
+        if owners and not owners.empty?
+          filters.push("(#{owners.map { |k,v| "(provider:\"#{k}\" AND (#{v.map{ |owner| "owner_uid:\"#{owner}\"" }.join(" OR ")}))" }.join(" OR ")})")
+        end
+        if albums and not albums.empty?
+          filters.push("(#{albums.map { |k,v| "(provider:\"#{k}\" AND (#{v.map{ |album| "album:\"#{album}\"" }.join(" OR ")}))" }.join(" OR ")})")
+        end
+        if tags and not tags.empty?
+          filters.push("(#{tags.map { |t| "tags:\"#{t}\"" }.join(' OR ')})")
+        end
+        filters.join(' AND ')
       end
 
 
@@ -26,17 +38,22 @@ module Birdbox
       #
       # @example
       #   owners = { :facebook => ['123', '456'], :twitter => ['789'] }
+      #   albums = { :facebook => ['111111', '222222'] }
       #   options = { :page => 1, :page_size => 25, :sort_by => 'uploaded_at' }
       #   results = Birdbox::Search::Nest.fetch(owners, %w(foobar), options)
       #   results.each { |result| puts result.my_field }
       # 
       # @param [Hash] owners keys are made up of the provider names and the values
       #   is an array of user ids specific to that provider.
-      # @param [Array] tags an array of string tokens representing tags.
+      # @param [Array] limit the results to the provided tags, which are simply an
+      #   array of string.
+      # @param [Hash] limit the results to the provided albums. The parameter is a
+      #   hash, using the service name (e.g facebook) as keys and an array of service 
+      #   ids as its values.
       # @param [Hash] options a hash of optional parameters.
       # @return [Tire::Results::Collection] an iterable collection of results
       #
-      def self.fetch(owners, tags, options = { })
+      def self.fetch(owners, tags, albums, options = { })
         opts = {
           :sort_by        => :uploaded_at,  # sort field
           :sort_direction => 'desc',        # sort direction            
@@ -47,7 +64,7 @@ module Birdbox
         }.merge(options)
 
         # Build the query string based on owners and tags
-        q = self.build_query_string(owners, tags)
+        q = self.build_query_string(owners, tags, albums)
 
         # Build the date range query if this request is time-bounded.
         if opts[:since] or opts[:until]
@@ -84,12 +101,16 @@ module Birdbox
       # 
       # @param [Hash] owners keys are made up of the provider names and the values
       #   is an array of user ids specific to that provider.
-      # @param [Array] tags an array of string tokens representing tags.
+      # @param [Array] limit the results to the provided tags, which are simply an
+      #   array of string.
+      # @param [Hash] limit the results to the provided albums. The parameter is a
+      #   hash, using the service name (e.g facebook) as keys and an array of service 
+      #   ids as its values.
       # @return [Array] a list of user ids and the associated count
       #
-      def self.find_tagged_people(owners, tags)
+      def self.find_tagged_people(owners, tags, albums)
         # Build the query string based on owners and tags
-        q = self.build_query_string(owners, tags)
+        q = self.build_query_string(owners, tags, albums)
         Resource.search {
           query { string q }
           facet('people') { terms :people }
@@ -107,9 +128,10 @@ module Birdbox
       #   is an array of user ids specific to that provider.
       # @param [Array] tags an array of string tokens representing tags.
       # @return [Nest] a nest object
-      def initialize(owners, tags)
+      def initialize(owners, tags, albums)
         @owners = owners || { }
         @tags = tags || [ ]
+        @albums = albums || { }
       end
 
 
