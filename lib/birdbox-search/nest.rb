@@ -53,7 +53,7 @@ module Birdbox
         if opts[:since] or opts[:until]
           from_date = Time.at(opts[:since].to_i)
           until_date = opts[:until] ? Time.at(opts[:until]) : Time.now.utc
-          q += " AND (updated_at:[#{from_date.strftime("%Y-%m-%dT%H:%M:%S")} TO #{until_date.strftime("%Y-%m-%dT%H:%M:%S")}])"
+          q += " AND (uploaded_at:[#{from_date.strftime("%Y-%m-%dT%H:%M:%S")} TO #{until_date.strftime("%Y-%m-%dT%H:%M:%S")}])"
         end
 
         search = Tire.search(Birdbox::Search::Resource.index_name) { |search|
