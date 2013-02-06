@@ -166,21 +166,39 @@ describe Birdbox::Search::Nest do
 
 =begin
   it "must be able to find all people tagged in the resources belonging to a nest" do
-    people = Nest.find_tagged_people({:facebook => ['100001', '100002']}, ['california'], nil)
+    sources = {
+      'facebook' => {
+        'tags' => {
+          '100001' => %w(california)
+        }
+      }
+    }
+    people = Nest.find_tagged_people(sources)
     people.count.must_equal(3)
     people[0].first.must_equal('facebook:000003')
     people[0].last.must_equal(2)
   end
+=end
 
-  it "must be able to fetch resources for a single owner and multiple albums" do
-    results = Nest.fetch({:facebook => ['100001']}, nil, {:facebook => ['1', '2']})
-    results.count.must_equal(3)
-  end
-
-  it "must be able to fetch resources for multiple owners and albums" do
-    results = Nest.fetch({:facebook => ['100001', '100002']}, nil, {:facebook => ['2', '3']})
+  it "must be able to fetch resources belonging to a single album" do
+    sources = {
+      'facebook' => {
+        'albums' => ['1']
+      }
+    }
+    results = Nest.fetch(sources)
     results.count.must_equal(2)
   end
-=end
+
+
+  it "must be able to fetch resources belonging to multiple albums" do
+    sources = {
+      'facebook' => {
+        'albums' => ['1', '2']
+      }
+    }
+    results = Nest.fetch(sources)
+    results.count.must_equal(4)
+  end
 
 end
