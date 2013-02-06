@@ -10,9 +10,9 @@ module Birdbox
       #
       # @param [Hash] owners keys are made up of the provider names and the values
       #   is an array of user ids specific to that provider.
-      # @param [Array] limit the results to the provided tags, which are simply an
+      # @param [Array] tags restrict the results to the provided tags, which are simply an
       #   array of string.
-      # @param [Hash] limit the results to the provided albums. The parameter is a
+      # @param [Hash] albums restrict the results to the provided albums. The parameter is a
       #   hash, using the service name (e.g facebook) as keys and an array of service 
       #   ids as its values.
       # @return [String] a Lucene query string to be used against the Resources index
@@ -45,9 +45,9 @@ module Birdbox
       # 
       # @param [Hash] owners keys are made up of the provider names and the values
       #   is an array of user ids specific to that provider.
-      # @param [Array] limit the results to the provided tags, which are simply an
+      # @param [Array] tags restrict the results to the provided tags, which are simply an
       #   array of string.
-      # @param [Hash] limit the results to the provided albums. The parameter is a
+      # @param [Hash] albums restrict the results to the provided albums. The parameter is a
       #   hash, using the service name (e.g facebook) as keys and an array of service 
       #   ids as its values.
       # @param [Hash] options a hash of optional parameters.
@@ -102,9 +102,9 @@ module Birdbox
       # 
       # @param [Hash] owners keys are made up of the provider names and the values
       #   is an array of user ids specific to that provider.
-      # @param [Array] limit the results to the provided tags, which are simply an
+      # @param [Array] tags restrict the results to the provided tags, which are simply an
       #   array of string.
-      # @param [Hash] limit the results to the provided albums. The parameter is a
+      # @param [Hash] albums restrict the results to the provided albums. The parameter is a
       #   hash, using the service name (e.g facebook) as keys and an array of service 
       #   ids as its values.
       # @return [Array] a list of user ids and the associated count
