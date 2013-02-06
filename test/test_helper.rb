@@ -34,6 +34,7 @@ module Fixtures
         :description => "That's the best looking cheesebuger I've seen in quite a while",
         :url => "http://www.example.com/cheeseburger.jpg",
         :tags => %w(cheeseburger),
+        :people => ['facebook:000003'],
         :album => '1',
         :height => 640, :width => 480,
         :created_at => Time.parse("2013-01-18 15:26:42"),

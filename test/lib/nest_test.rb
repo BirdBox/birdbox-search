@@ -164,21 +164,19 @@ describe Birdbox::Search::Nest do
     results.count.must_equal(1)
   end
 
-=begin
   it "must be able to find all people tagged in the resources belonging to a nest" do
     sources = {
       'facebook' => {
         'tags' => {
-          '100001' => %w(california)
+          '100001' => %w(california cheeseburger)
         }
       }
     }
     people = Nest.find_tagged_people(sources)
-    people.count.must_equal(3)
+    people.count.must_equal(2)
     people[0].first.must_equal('facebook:000003')
     people[0].last.must_equal(2)
   end
-=end
 
   it "must be able to fetch resources belonging to a single album" do
     sources = {
