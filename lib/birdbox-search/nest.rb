@@ -40,7 +40,7 @@ module Birdbox
       #   owners = { :facebook => ['123', '456'], :twitter => ['789'] }
       #   albums = { :facebook => ['111111', '222222'] }
       #   options = { :page => 1, :page_size => 25, :sort_by => 'uploaded_at' }
-      #   results = Birdbox::Search::Nest.fetch(owners, %w(foobar), options)
+      #   results = Birdbox::Search::Nest.fetch(owners, %w(foobar), albums, options)
       #   results.each { |result| puts result.my_field }
       # 
       # @param [Hash] owners keys are made up of the provider names and the values
@@ -96,7 +96,8 @@ module Birdbox
       #
       # @example
       #   owners = { :facebook => ['123', '456'] }
-      #   people = Birdbox::Search::Nest.find_tagged_people(owners, %w(foobar))
+      #   albums = { :facebook => ['111111', '222222'] }
+      #   people = Birdbox::Search::Nest.find_tagged_people(owners, %w(foobar), albums)
       #   people.each { |p| puts "#{p[0]} was tagged #{p[1]} times }
       # 
       # @param [Hash] owners keys are made up of the provider names and the values
@@ -139,7 +140,8 @@ module Birdbox
       # 
       # @example
       #   owners = { :facebook => ['123', '456'], :twitter => ['789'] }
-      #   nest = Birdbox::Search::Nest.new(owners, %w(foobar))
+      #   albums = { :facebook => ['111111', '222222'] }
+      #   nest = Birdbox::Search::Nest.new(owners, %w(foobar), albums)
       #   results = nest.fetch(:page => 1, :page_size => 25)
       #   results.each { |result| puts result.my_field }
       # 
@@ -155,7 +157,8 @@ module Birdbox
       #
       # @example
       #   owners = { :facebook => ['123', '456'] }
-      #   nest = Birdbox::Search::Nest.new(owners, %w(foobar))
+      #   albums = { :facebook => ['111111', '222222'] }
+      #   nest = Birdbox::Search::Nest.new(owners, %w(foobar), albums)
       #   people = nest.find_tagged_people()
       #   people.each { |p| puts "#{p[0]} was tagged #{p[1]} times }
       # @return (see find_tagged_people)
