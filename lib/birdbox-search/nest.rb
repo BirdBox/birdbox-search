@@ -93,6 +93,11 @@ module Birdbox
       #
 
       def self.fetch(sources, options = { })
+        # if no query parameters go away
+        if sources.keys.count == 0
+          return []
+        end
+        
         opts = {
           :sort_by        => :uploaded_at,  # sort field
           :sort_direction => 'desc',        # sort direction            
