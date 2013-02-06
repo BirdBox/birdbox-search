@@ -53,6 +53,23 @@ module Birdbox
       # @param [Hash] options a hash of optional parameters.
       # @return [Tire::Results::Collection] an iterable collection of results
       #
+      
+      sources => {
+        'facebook' => {
+          'albums' => %w(132212),
+          'tags' => { 
+            '144251' => %w(kiddos vacation)
+            '235967' => %w(mexico)
+          }
+        },
+        'instagram' => {
+          'tags' => {
+            '156832' => %w(springbreak),
+            '124560' => %w(cabo) 
+          }
+        }
+      }
+
       def self.fetch(owners, tags, albums, options = { })
         opts = {
           :sort_by        => :uploaded_at,  # sort field
