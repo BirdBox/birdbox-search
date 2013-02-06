@@ -71,6 +71,7 @@ module Fixtures
         :height => 640, :width => 480, :created_at => Time.parse("2013-01-02 13:04:11"),
         :updated_at => Time.parse("2013-01-02 13:04:11"), :uploaded_at => Time.parse("2013-01-02 13:04:11"), 
         :taken_at => Time.parse("2013-01-02 13:04:11")),
+
       Resource.new(:id => 'twitter:2', :provider => "twitter", :external_id => "2",
         :owner_uid => "200002", :owner_nickname => "bob", :title => "The Golden Gate",
         :type => "photo", :description => "Look at that, not a cloud in the sky.",
@@ -78,6 +79,7 @@ module Fixtures
         :height => 640, :width => 480, :created_at => Time.parse("2012-12-05 9:23:56"),
         :updated_at => Time.parse("2012-12-05 9:23:56"), :uploaded_at => Time.parse("2012-12-05 9:23:56"), 
         :taken_at => Time.parse("2012-12-05 9:23:56")),
+
       Resource.new(:id => 'twitter:3', :provider => "twitter", :external_id => "3",
         :owner_uid => "200002", :owner_nickname => "bob", :title => "Hearst Castle",
         :type => "photo", :description => "Damn, nice crib.",

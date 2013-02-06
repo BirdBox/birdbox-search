@@ -18,21 +18,91 @@ describe Birdbox::Search::Nest do
     Resource.index.refresh
   end
   
-  it "must be able to fetch resources for a single tag and a single owner" do
-    results = Nest.fetch({:facebook => ['100001']}, ['california'], nil)
+  it "must be able to fetch resources for a single tag belonging to a single owner using one service." do
+    sources = {
+      'facebook' => {
+        'tags' => {
+          '100001' => %w(california)
+        }
+      }
+    }
+    results = Nest.fetch(sources)
     results.count.must_equal(1)
   end
 
-  it "must be able to fetch resources for a single tag and multiple owners" do
-    results = Nest.fetch({:facebook => ['100001', '100002'], :twitter => ['200001']}, ['california'], nil)
-    results.count.must_equal(3)
+  it "must be able to fetch resources for multiple tags belonging to a single owner using one service" do
+    sources = {
+      'facebook' => {
+        'tags' => {
+          '100001' => %w(california norcal)
+        }
+      }
+    }
+    results = Nest.fetch(sources)
+    results.count.must_equal(2)
   end
 
-  it "must be able to fetch resources for multiple tags" do
-    results = Nest.fetch({:facebook => ['100001', '100002']}, %w(cheeseburger california), nil)
-    results.count.must_equal(3)
+  it "must be able to fetch resources for a single tag and multiple owners using one service" do
+    sources = {
+      'facebook' => {
+        'tags' => {
+          '100001' => %w(california),
+          '100002' => %w(california)
+        }
+      }
+    }
+    results = Nest.fetch(sources)
+    results.count.must_equal(2)
   end
 
+  it "must be able to fetch resources for a single tag belonging to multiple owners using one service" do
+    sources = {
+      'facebook' => {
+        'tags' => {
+          '100001' => %w(california),
+          '100002' => %w(california)
+        }
+      }
+    }
+    results = Nest.fetch(sources)
+    results.count.must_equal(2)
+  end
+
+  it "must be able to fetch resources for multiple tags belonging to multiple owners using one service" do
+    sources = {
+      'facebook' => {
+        'tags' => {
+          '100001' => %w(norcal),
+          '100002' => %w(california)
+        }
+      }
+    }
+    results = Nest.fetch(sources)
+    results.count.must_equal(2)
+  end
+
+  it "must be able to fetch resources for a single tag using more than one service" do
+    sources = {
+      'facebook' => {
+        'tags' => {
+          '100001' => %w(california),
+          '100002' => %w(california)
+        }
+      },
+      'twitter' => {
+        'tags' => {
+          '200001' => %w(california),
+          '200002' => %w(california)
+        }
+      }
+    }
+    results = Nest.fetch(sources)
+    results.count.must_equal(5)
+  end
+
+
+
+=begin
   it "must be able to paginate results" do
     members = { :facebook => ['100001', '100002'], :twitter => ['200001', '200002'] }
     tags = %w(california cheeseburger)
@@ -77,5 +147,6 @@ describe Birdbox::Search::Nest do
     results = Nest.fetch({:facebook => ['100001', '100002']}, nil, {:facebook => ['2', '3']})
     results.count.must_equal(2)
   end
+=end
 
 end

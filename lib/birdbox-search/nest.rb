@@ -8,15 +8,46 @@ module Birdbox
 
       # Build a Lucene query based on the owner(s) and tag(s) of a resource.
       #
-      # @param [Hash] owners keys are made up of the provider names and the values
-      #   is an array of user ids specific to that provider.
-      # @param [Array] tags restrict the results to the provided tags, which are simply an
-      #   array of string.
-      # @param [Hash] albums restrict the results to the provided albums. The parameter is a
-      #   hash, using the service name (e.g facebook) as keys and an array of service 
-      #   ids as its values.
+      # @param [Hash] sources
       # @return [String] a Lucene query string to be used against the Resources index
       #
+      #
+      #
+      def self.build_query_string(sources)
+        sources.map { |provider, filters|
+          provider_query(provider, filters)
+        }.join(' OR ')
+      end
+
+
+      #
+      #
+      def self.provider_query(provider, filters)
+        q = [ ]
+        if filters['albums'] and not filters['albums'].empty?
+          q.push(
+            #"(#{
+              filters.fetch('albums', [ ]).map { |album| 
+                "album:\"#{album}\""
+              }.join(' OR ')
+            #})"
+          )
+        end
+       
+        if filters['tags'] and not filters['tags'].empty?
+          q.push(
+            #"(#{
+              filters.fetch('tags', { }).map { |owner,tags|
+                "(owner_uid:\"#{owner}\" AND (#{tags.map {|tag| "tags:\"#{tag}\""}.join(' OR ')}))"
+              }.join(' OR ')
+            #})"
+          )
+        end
+        "(provider:\"#{provider}\" AND (#{q.join(' OR ')}))"
+      end
+
+
+=begin
       def self.build_query_string(owners, tags, albums)
         filters = [ ]
         if owners and not owners.empty?
@@ -30,47 +61,38 @@ module Birdbox
         end
         filters.join(' AND ')
       end
-
+=end
 
       # Fetches all resources associated with a nest. A resource belongs to a
       # nest if its tag matches one or more of the nest's tags and is owned by
       # one of the nest's owners.
       #
       # @example
-      #   owners = { :facebook => ['123', '456'], :twitter => ['789'] }
-      #   albums = { :facebook => ['111111', '222222'] }
+      #   sources = {
+      #     'facebook' => {
+      #       'albums' => %w(132212),
+      #       'tags' => { 
+      #         '144251' => %w(kiddos vacation),
+      #         '235967' => %w(mexico)
+      #       }
+      #     },
+      #     'instagram' => {
+      #       'tags' => {
+      #         '156832' => %w(springbreak),
+      #         '124560' => %w(cabo) 
+      #       }
+      #     }
+      #   }
       #   options = { :page => 1, :page_size => 25, :sort_by => 'uploaded_at' }
-      #   results = Birdbox::Search::Nest.fetch(owners, %w(foobar), albums, options)
+      #   results = Birdbox::Search::Nest.fetch(sources, options)
       #   results.each { |result| puts result.my_field }
       # 
-      # @param [Hash] owners keys are made up of the provider names and the values
-      #   is an array of user ids specific to that provider.
-      # @param [Array] tags restrict the results to the provided tags, which are simply an
-      #   array of string.
-      # @param [Hash] albums restrict the results to the provided albums. The parameter is a
-      #   hash, using the service name (e.g facebook) as keys and an array of service 
-      #   ids as its values.
+      # @param [Hash] sources
       # @param [Hash] options a hash of optional parameters.
       # @return [Tire::Results::Collection] an iterable collection of results
       #
-      
-      sources => {
-        'facebook' => {
-          'albums' => %w(132212),
-          'tags' => { 
-            '144251' => %w(kiddos vacation)
-            '235967' => %w(mexico)
-          }
-        },
-        'instagram' => {
-          'tags' => {
-            '156832' => %w(springbreak),
-            '124560' => %w(cabo) 
-          }
-        }
-      }
 
-      def self.fetch(owners, tags, albums, options = { })
+      def self.fetch(sources, options = { })
         opts = {
           :sort_by        => :uploaded_at,  # sort field
           :sort_direction => 'desc',        # sort direction            
@@ -80,8 +102,9 @@ module Birdbox
           :until          => nil            # default to the end of time
         }.merge(options)
 
-        # Build the query string based on owners and tags
-        q = self.build_query_string(owners, tags, albums)
+        # Build the query string based the 'sources' parameter
+        q = self.build_query_string(sources)
+        #puts "\n#{q}\n"
 
         # Build the date range query if this request is time-bounded.
         if opts[:since] or opts[:until]
@@ -112,23 +135,30 @@ module Birdbox
       # provided owners and tags.
       #
       # @example
-      #   owners = { :facebook => ['123', '456'] }
-      #   albums = { :facebook => ['111111', '222222'] }
-      #   people = Birdbox::Search::Nest.find_tagged_people(owners, %w(foobar), albums)
+      #   sources = {
+      #     'facebook' => {
+      #       'albums' => %w(132212),
+      #       'tags' => { 
+      #         '144251' => %w(kiddos vacation),
+      #         '235967' => %w(mexico)
+      #       }
+      #     },
+      #     'instagram' => {
+      #       'tags' => {
+      #         '156832' => %w(springbreak),
+      #         '124560' => %w(cabo) 
+      #       }
+      #     }
+      #   }
+      #   people = Birdbox::Search::Nest.find_tagged_people(sources)
       #   people.each { |p| puts "#{p[0]} was tagged #{p[1]} times }
       # 
-      # @param [Hash] owners keys are made up of the provider names and the values
-      #   is an array of user ids specific to that provider.
-      # @param [Array] tags restrict the results to the provided tags, which are simply an
-      #   array of string.
-      # @param [Hash] albums restrict the results to the provided albums. The parameter is a
-      #   hash, using the service name (e.g facebook) as keys and an array of service 
-      #   ids as its values.
+      # @param [Hash] sources
       # @return [Array] a list of user ids and the associated count
       #
-      def self.find_tagged_people(owners, tags, albums)
-        # Build the query string based on owners and tags
-        q = self.build_query_string(owners, tags, albums)
+      def self.find_tagged_people(sources)
+        # Build the query string based the 'sources' parameter
+        q = self.build_query_string(sources)
         Resource.search {
           query { string q }
           facet('people') { terms :people }
@@ -136,54 +166,6 @@ module Birdbox
           [f['term'], f['count']]
         end
       end
-
-
-      attr_accessor :owners, :tags
-
-      # Creates a new instance of a Nest object.
-      #
-      # @param [Hash] owners keys are made up of the provider names and the values
-      #   is an array of user ids specific to that provider.
-      # @param [Array] tags an array of string tokens representing tags.
-      # @return [Nest] a nest object
-      def initialize(owners, tags, albums)
-        @owners = owners || { }
-        @tags = tags || [ ]
-        @albums = albums || { }
-      end
-
-
-      # Fetches all resources associated with this nest instance. 
-      # 
-      # @example
-      #   owners = { :facebook => ['123', '456'], :twitter => ['789'] }
-      #   albums = { :facebook => ['111111', '222222'] }
-      #   nest = Birdbox::Search::Nest.new(owners, %w(foobar), albums)
-      #   results = nest.fetch(:page => 1, :page_size => 25)
-      #   results.each { |result| puts result.my_field }
-      # 
-      # @param [Hash] options a hash of optional parameters.
-      # @return (see fetch)
-      #
-      def fetch(options={ })
-        Nest.fetch(self.owners, self.tags)
-      end
-
-
-      # Finds all people tagged in the resources beloning to this nest instance.
-      #
-      # @example
-      #   owners = { :facebook => ['123', '456'] }
-      #   albums = { :facebook => ['111111', '222222'] }
-      #   nest = Birdbox::Search::Nest.new(owners, %w(foobar), albums)
-      #   people = nest.find_tagged_people()
-      #   people.each { |p| puts "#{p[0]} was tagged #{p[1]} times }
-      # @return (see find_tagged_people)
-      #
-      def find_tagged_people
-        Nest.find_tagged_people(self.owners, self.tags)
-      end
-
     end
 
   end
