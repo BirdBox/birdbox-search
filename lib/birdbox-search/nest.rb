@@ -6,12 +6,11 @@ module Birdbox
     # to the nest.
     class Nest
 
-      # Build a Lucene query based on the owner(s) and tag(s) of a resource.
+      # Build a Lucene query based on the values found in the sources parameter.
       #
-      # @param [Hash] sources
+      # @param [Hash] sources a hash containing one or more providers, each specifying
+      #   tags and/or albums.
       # @return [String] a Lucene query string to be used against the Resources index
-      #
-      #
       #
       def self.build_query_string(sources)
         sources.map { |provider, filters|
@@ -20,7 +19,11 @@ module Birdbox
       end
 
 
+      # Build the provider-specific query.  An example of a provider is facebook,
+      # which may declare a list of tags and/or albums.
       #
+      # @param [String] provider the provider name
+      # @param [Hash] filters a list of tags and/or albums
       #
       def self.provider_query(provider, filters)
         q = [ ]
@@ -47,22 +50,6 @@ module Birdbox
       end
 
 
-=begin
-      def self.build_query_string(owners, tags, albums)
-        filters = [ ]
-        if owners and not owners.empty?
-          filters.push("(#{owners.map { |k,v| "(provider:\"#{k}\" AND (#{v.map{ |owner| "owner_uid:\"#{owner}\"" }.join(" OR ")}))" }.join(" OR ")})")
-        end
-        if albums and not albums.empty?
-          filters.push("(#{albums.map { |k,v| "(provider:\"#{k}\" AND (#{v.map{ |album| "album:\"#{album}\"" }.join(" OR ")}))" }.join(" OR ")})")
-        end
-        if tags and not tags.empty?
-          filters.push("(#{tags.map { |t| "tags:\"#{t}\"" }.join(' OR ')})")
-        end
-        filters.join(' AND ')
-      end
-=end
-
       # Fetches all resources associated with a nest. A resource belongs to a
       # nest if its tag matches one or more of the nest's tags and is owned by
       # one of the nest's owners.
@@ -87,11 +74,11 @@ module Birdbox
       #   results = Birdbox::Search::Nest.fetch(sources, options)
       #   results.each { |result| puts result.my_field }
       # 
-      # @param [Hash] sources
+      # @param [Hash] sources a hash containing one or more providers, each specifying
+      #   tags and/or albums.
       # @param [Hash] options a hash of optional parameters.
       # @return [Tire::Results::Collection] an iterable collection of results
       #
-
       def self.fetch(sources, options = { })
         # if no query parameters go away
         if sources.keys.count == 0
@@ -158,7 +145,8 @@ module Birdbox
       #   people = Birdbox::Search::Nest.find_tagged_people(sources)
       #   people.each { |p| puts "#{p[0]} was tagged #{p[1]} times }
       # 
-      # @param [Hash] sources
+      # @param [Hash] sources a hash containing one or more providers, each specifying
+      #   tags and/or albums.
       # @return [Array] a list of user ids and the associated count
       #
       def self.find_tagged_people(sources)
