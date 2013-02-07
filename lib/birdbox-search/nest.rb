@@ -111,7 +111,10 @@ module Birdbox
           }
 
           if opts[:sort_by]
-            search.sort { by opts[:sort_by], opts[:sort_direction] || 'desc' }
+            search.sort { 
+              by opts[:sort_by], opts[:sort_direction] || 'desc' 
+              by :external_id, 'asc'
+            }
           end
 
           page = opts[:page].to_i
