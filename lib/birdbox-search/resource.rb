@@ -10,6 +10,10 @@ module Birdbox
           index_name "resources"
           document_type "resource"
           mapping do
+            # user has many authentication which has many services, so if we EVER want to tie the resource to a service, unfortunately
+            # we have to persist the service somehow (and do not want to couple these togther) - so add a service name
+            # think of google as the authentication provider and 'picasa, g+, gmail, etc as the services'
+            property :service,                :type => 'string',  :index => 'not_analyzed'
             property :provider,               :type => 'string',  :index => 'not_analyzed'
             property :external_id,            :type => 'string',  :index => 'not_analyzed'
             property :owner_uid,              :type => 'string',  :index => 'not_analyzed'
