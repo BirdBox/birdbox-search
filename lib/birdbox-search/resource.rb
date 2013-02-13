@@ -25,7 +25,8 @@ module Birdbox
             property :url,                    :type => 'string',  :index => 'not_analyzed'
             property :type,                   :type => 'string',  :index => 'not_analyzed'
             property :tags,                   :type => 'string',  :index => 'not_analyzed', :default => [ ]
-            property :people,                 :type => 'string',  :index => 'not_analyzed', :default => [ ]
+            property :people,                 :properties => {:id => {:type => 'string'}, :name => {:type => 'string'}}, 
+              :index => 'not_analyzed', :default => [ ]
             property :height,                 :type => 'integer', :index => 'no'
             property :width,                  :type => 'integer', :index => 'no'
             property :created_at,             :type => 'date',    :index => 'not_analyzed'
