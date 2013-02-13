@@ -103,6 +103,7 @@ module Birdbox
       def initialize(params={})
         @_updated = false
         self.tags = []
+        self.people = []
         super(params)
       end
 
