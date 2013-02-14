@@ -16,7 +16,10 @@ module Fixtures
         :url => "http://www.example.com/isla_vista.jpg",
         :tags => %w(california),
         :album => '1',
-        :people => ['facebook:000002', 'facebook:000003'],
+        :people => [
+          { :id => '22', :name => 'Rickey Henderson' },
+          { :id => '34', :name => 'Dave Steward' }
+        ],
         :height => 640,
         :width => 480,
         :created_at => Time.parse("2013-01-01 00:02:14"),
@@ -34,7 +37,10 @@ module Fixtures
         :description => "That's the best looking cheesebuger I've seen in quite a while",
         :url => "http://www.example.com/cheeseburger.jpg",
         :tags => %w(cheeseburger),
-        :people => ['facebook:000003'],
+        :people => [
+          { :id => '22', :name => 'Rickey Henderson' },
+          { :id => '42', :name => 'Dave Henderson' }
+        ],
         :album => '1',
         :height => 640, :width => 480,
         :created_at => Time.parse("2013-01-18 15:26:42"),
@@ -53,7 +59,10 @@ module Fixtures
         :url => "http://www.example.com/bidwell.jpg",
         :tags => %w(california),
         :album => '2',
-        :people => ['facebook:000001', 'facebook:000003'],
+        :people => [
+          { :id => '22', :name => 'Rickey Henderson' },
+          { :id => '43', :name => 'Dennis Eckersley' }
+        ],
         :height => 640,
         :width => 480,
         :created_at => Time.parse("2013-01-10 22:34:07"),
@@ -72,7 +81,9 @@ module Fixtures
         :url => "http://www.example.com/arcata.jpg",
         :tags => %w(norcal),
         :album => '2',
-        :people => [],
+        :people => [
+          { :id => '42', :name => 'Dave Henderson' }
+        ],
         :height => 640,
         :width => 480,
         :created_at => Time.parse("2013-02-02 12:54:15"),

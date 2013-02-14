@@ -145,23 +145,27 @@ module Birdbox
       #       }
       #     }
       #   }
-      #   people = Birdbox::Search::Nest.find_tagged_people(sources)
-      #   people.each { |p| puts "#{p[0]} was tagged #{p[1]} times }
+      #   people = Birdbox::Search::Nest.find_tagged_people(sources, :size => 5)
+      #   people.each { |p| puts "#{p[0]} was tagged #{p[1]} times" }
       # 
       # @param [Hash] sources a hash containing one or more providers, each specifying
       #   tags and/or albums.
       # @return [Array] a list of user ids and the associated count
       #
-      def self.find_tagged_people(sources)
+      def self.find_tagged_people(sources, options={ })
+        opts = {
+          :size => 10
+        }.merge(options)
         # Build the query string based the 'sources' parameter
         q = self.build_query_string(sources)
         Resource.search {
           query { string q }
-          facet('people') { terms :people }
+          facet('people') { terms 'people.id', :size => opts[:size] }
         }.facets['people']['terms'].map do |f|
           [f['term'], f['count']]
         end
       end
+
     end
 
   end

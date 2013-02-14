@@ -168,13 +168,13 @@ describe Birdbox::Search::Nest do
     sources = {
       'facebook' => {
         'tags' => {
-          '100001' => %w(california cheeseburger)
+          '100001' => %w(norcal cheeseburger)
         }
       }
     }
     people = Nest.find_tagged_people(sources)
     people.count.must_equal(2)
-    people[0].first.must_equal('facebook:000003')
+    people[0].first.must_equal('42')
     people[0].last.must_equal(2)
   end
 
