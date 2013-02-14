@@ -138,15 +138,15 @@ module Birdbox
 
       private
 
-      # Only saves a resource if it does not already exist or if its tags have
-      # been modified. Updating a search index is an expensive operation and
+      # Only saves a resource if it does not already exist or if its tags or people tagged
+      # have been modified. Updating a search index is an expensive operation and
       # since we are constantly rescanning resources, this method should help
       # migigate the impact on search performance.
       def before_save
         self.id = "#{self.provider}:#{self.external_id}"
         @_updated = false
         resource = Resource.find(self.id)
-        if resource and resource.tags == self.tags
+        if resource and resource.tags == self.tags and resource.people == self.people
           return false
         end
         self.created_at = (self.created_at || Time.now).utc
