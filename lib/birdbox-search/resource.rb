@@ -67,8 +67,28 @@ module Birdbox
       include Tire::Model::Callbacks
       include Birdbox::Search::Searchable
 
-      before_save :before_save
-      after_save :after_save
+      # Only saves a resource if it does not already exist or if its tags or people tagged
+      # have been modified. Updating a search index is an expensive operation and
+      # since we are constantly rescanning resources, this method should help
+      # migigate the impact on search performance.
+      before_save do
+        self.id = "#{self.provider}:#{self.external_id}"
+        @_updated = false
+        resource = Resource.find(self.id) # the active flag is impacting the finder and making havoc
+        # can also set removed
+        if resource and resource.tags == self.tags and resource.people == self.people and resource.removed == self.removed
+          return false
+        end
+        self.created_at = (self.created_at || Time.now).utc
+        self.updated_at = Time.now.utc
+        true
+      end
+
+      # Set the @_updated flag to signal that the save operation caused
+      # the index to be updated.
+      after_save do
+        @_updated = true
+      end
 
       # When a 3rd party (such as facebook) yields multiple thumbnails pick the one that is closest (larger preferred) to the desired width
       OPTIMUM_THUMBNAIL_WIDTH_SMALL = 70
@@ -135,33 +155,6 @@ module Birdbox
       #
       def updated?
         return @_updated
-      end
-
-
-      private
-
-      # Only saves a resource if it does not already exist or if its tags or people tagged
-      # have been modified. Updating a search index is an expensive operation and
-      # since we are constantly rescanning resources, this method should help
-      # migigate the impact on search performance.
-      def before_save
-        self.id = "#{self.provider}:#{self.external_id}"
-        @_updated = false
-        resource = Resource.find(self.id) # the active flag is impacting the finder and making havoc
-        # can also set removed
-        if resource and resource.tags == self.tags and resource.people == self.people and resource.removed == self.removed
-          return false
-        end
-        self.created_at = (self.created_at || Time.now).utc
-        self.updated_at = Time.now.utc
-        true
-      end
-
-
-      # Set the @_updated flag to signal that the save operation caused
-      # the index to be updated.
-      def after_save
-        @_updated = true
       end
 
     end
