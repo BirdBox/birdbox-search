@@ -70,7 +70,8 @@ module Birdbox
       #       }
       #     }
       #   }
-      #   options = { :page => 1, :page_size => 25, :sort_by => 'uploaded_at' }
+      #   options = { :page => 1, :page_size => 25, :sort_by => 'uploaded_at', 
+      #     :exclude => ['facebook:432115', 'facebook:632613'] }
       #   results = Birdbox::Search::Nest.fetch(sources, options)
       #   results.each { |result| puts result.my_field }
       # 
@@ -91,11 +92,17 @@ module Birdbox
           :page           => 1,             # the pagination index
           :page_size      => 10,            # number of items to return per page
           :since          => nil,           # default to the beginning of time
-          :until          => nil            # default to the end of time
+          :until          => nil,           # default to the end of time
+          :exclude        => nil            # excluded resource ids
         }.merge(options)
 
         # Build the query string based the 'sources' parameter
         q = self.build_query_string(sources)
+
+        # Do not include resources matching the provider:id (e.g. facebook:123456) combination.
+        #if opts[:exclude] and not opts[:exclude].empty?
+        #  q = "(#{q}) AND ( )" 
+        #end
 
         # Build the date range query if this request is time-bounded.
         if opts[:since] or opts[:until]
@@ -105,13 +112,21 @@ module Birdbox
         end
 
         #puts "\n#{q}\n"
-        search = Tire.search(Birdbox::Search::Resource.index_name) { |search|
-          search.query { |query|
-            query.string q
+        search = Tire.search(Birdbox::Search::Resource.index_name) {
+          query {
+            filtered {
+              query { string q } 
+              # Don't include resources that have been explicitly excluded.
+              if opts[:exclude] and not opts[:exclude].empty?
+                filter :not, {
+                  :terms => {:_id => opts[:exclude], :execution => 'or'}
+                }
+              end
+            }
           }
 
           if opts[:sort_by]
-            search.sort { 
+            sort { 
               by opts[:sort_by], opts[:sort_direction] || 'desc' 
               by :external_id, 'asc'
             }
@@ -119,8 +134,8 @@ module Birdbox
 
           page = opts[:page].to_i
           page_size = opts[:page_size].to_i
-          search.from (page - 1) * page_size
-          search.size page_size
+          from (page - 1) * page_size
+          size page_size
         }
         search.results    
       end

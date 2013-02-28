@@ -199,4 +199,18 @@ describe Birdbox::Search::Nest do
     results.count.must_equal(4)
   end
 
+
+  it "must be able to exclude resources by id" do
+    sources = {
+      'facebook' => {
+        'tags' => {
+          '100001' => %w(california norcal cheeseburger),
+          '100002' => %w(california)
+        }
+      }
+    }
+    results = Nest.fetch(sources, :exclude => ['facebook:1', 'facebook:4'])
+    results.count.must_equal(2)
+  end
+
 end
