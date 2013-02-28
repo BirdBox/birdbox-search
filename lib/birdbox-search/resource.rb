@@ -52,7 +52,7 @@ module Birdbox
             property :thumbnail_width_large,  :type => 'integer', :index => 'no'
             property :html,                   :type => 'string',  :index => 'no'
             property :owned,                  :type => 'boolean', :index => 'not_analyzed'
-            property :active,                 :type => 'boolean', :index => 'not_analyzed'
+            property :removed,                :type => 'boolean', :index => 'not_analyzed'
           end
         end
       end
@@ -112,7 +112,7 @@ module Birdbox
         @_updated = false
         self.tags = []
         self.people = []
-        self.active = true
+        self.removed = false
         super(params)
       end
 
@@ -147,9 +147,11 @@ module Birdbox
       def before_save
         self.id = "#{self.provider}:#{self.external_id}"
         @_updated = false
-        resource = Resource.find(self.id)
+        resource = Resource.find(self.id) # the active flag is impacting the finder and making havoc
         # can also set inactive
-        if resource and resource.tags == self.tags and resource.people == self.people and resource.active == self.active
+        if !resource
+          return false
+        elsif resource and resource.tags == self.tags and resource.people == self.people and resource.removed == self.removed
           return false
         end
         self.created_at = (self.created_at || Time.now).utc

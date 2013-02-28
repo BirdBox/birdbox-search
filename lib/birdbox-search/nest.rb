@@ -46,7 +46,7 @@ module Birdbox
             #})"
           )
         end
-        "(provider:\"#{provider}\" AND ((#{q.join(' OR ')}) AND active:true))"
+        "(provider:\"#{provider}\" AND ((#{q.join(' OR ')}) AND removed:false))"
       end
 
 
