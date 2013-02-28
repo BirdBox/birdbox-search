@@ -148,7 +148,8 @@ module Birdbox
         self.id = "#{self.provider}:#{self.external_id}"
         @_updated = false
         resource = Resource.find(self.id)
-        if resource and resource.tags == self.tags and resource.people == self.people
+        # can also set inactive
+        if resource and resource.tags == self.tags and resource.people == self.people and resource.active == self.active
           return false
         end
         self.created_at = (self.created_at || Time.now).utc
