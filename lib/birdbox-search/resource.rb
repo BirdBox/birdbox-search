@@ -149,9 +149,7 @@ module Birdbox
         @_updated = false
         resource = Resource.find(self.id) # the active flag is impacting the finder and making havoc
         # can also set inactive
-        if !resource
-          return false
-        elsif resource and resource.tags == self.tags and resource.people == self.people and resource.removed == self.removed
+        if resource and resource.tags == self.tags and resource.people == self.people and resource.removed == self.removed
           return false
         end
         self.created_at = (self.created_at || Time.now).utc
