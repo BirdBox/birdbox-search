@@ -52,6 +52,7 @@ module Birdbox
             property :thumbnail_width_large,  :type => 'integer', :index => 'no'
             property :html,                   :type => 'string',  :index => 'no'
             property :owned,                  :type => 'boolean', :index => 'not_analyzed'
+            property :active,                 :type => 'boolean', :index => 'not_analyzed'
           end
         end
       end
@@ -111,6 +112,7 @@ module Birdbox
         @_updated = false
         self.tags = []
         self.people = []
+        self.active = true
         super(params)
       end
 
