@@ -1,86 +1,79 @@
 module Birdbox
   module Search
 
-    # A module encapsulating the properties and mappings of the `resources` index.
-    module Searchable
-      # Set the index properties and mappings of the class including this module.
-      def self.included(base)
-        base.class_eval do
-          index_prefix ""
-          index_name "resources"
-          document_type "resource"
-          mapping do
-            # user has many authentication which has many services, so if we EVER want to tie the resource to a service, unfortunately
-            # we have to persist the service somehow (and do not want to couple these togther) - so add a service name
-            # think of google as the authentication provider and 'picasa, g+, gmail, etc as the services'
-            property :service,                :type => 'string',  :index => 'not_analyzed'
-            property :provider,               :type => 'string',  :index => 'not_analyzed'
-            property :external_id,            :type => 'string',  :index => 'not_analyzed'
-            property :owner_uid,              :type => 'string',  :index => 'not_analyzed'
-            property :owner_nickname,         :type => 'string',  :index => 'not_analyzed'
-            property :owner_birdbox_nickname, :type => 'string',  :index => 'not_analyzed'
-            property :owner_avatar,           :type => 'string',  :index => 'not_analyzed'
-            property :album,                  :type => 'string',  :index => 'not_analyzed'
-            property :title,                  :type => 'string',  :index => 'analyzed',     :analyzer => 'standard'
-            property :url,                    :type => 'string',  :index => 'not_analyzed'
-            property :type,                   :type => 'string',  :index => 'not_analyzed'
-            property :tags,                   :type => 'string',  :index => 'not_analyzed', :default => [ ]
-            # property :people,                 :type => 'string',  :index => 'not_analyzed', :default => [ ]
-            
-            property :people,                  :type => 'object',
-              :properties => {
-                :id => {:type => "string", :index => :not_analyzed },
-                :name => { :type => "string", :index => :not_analyzed }
-              }
-
-            property :height,                 :type => 'integer', :index => 'no'
-            property :width,                  :type => 'integer', :index => 'no'
-            property :created_at,             :type => 'date',    :index => 'not_analyzed'
-            property :updated_at,             :type => 'date',    :index => 'not_analyzed'
-            property :uploaded_at,            :type => 'date',    :index => 'not_analyzed'
-            property :taken_at,               :type => 'date',    :index => 'not_analyzed'
-            property :description,            :type => 'string',  :index => 'analyzed',     :analyzer => 'standard'
-            property :download_url,           :type => 'string',  :index => 'no'
-            property :thumbnail_url_small,    :type => 'string',  :index => 'no'
-            property :thumbnail_height_small, :type => 'integer', :index => 'no'
-            property :thumbnail_width_small,  :type => 'integer', :index => 'no'
-            property :thumbnail_url_medium,   :type => 'string',  :index => 'no'
-            property :thumbnail_height_medium,:type => 'integer', :index => 'no'
-            property :thumbnail_width_medium, :type => 'integer', :index => 'no'
-            property :thumbnail_url_large,    :type => 'string',  :index => 'no'
-            property :thumbnail_height_large, :type => 'integer', :index => 'no'
-            property :thumbnail_width_large,  :type => 'integer', :index => 'no'
-            property :html,                   :type => 'string',  :index => 'no'
-            property :owned,                  :type => 'boolean', :index => 'not_analyzed'
-            property :removed,                :type => 'boolean', :index => 'not_analyzed'
-          end
-        end
-      end
-    end
-
     # The Resource class wraps an Elasticsearch index by the same name. Note that the 
     # mappings are only applied when calling Resource.create_elasticsearch_index.
     # Using Resource.index.create will create a generic index with no mappings.
     class Resource
       include Tire::Model::Persistence
-      include Tire::Model::Search
-      include Tire::Model::Callbacks
-      include Birdbox::Search::Searchable
+
+      # A class method defining the properties and mappings of the `resources` index.
+      def self.create_mappings
+        index_prefix ""
+        index_name "resources"
+        document_type "resource"
+        mapping do
+          # user has many authentication which has many services, so if we EVER want to tie the resource to a service, unfortunately
+          # we have to persist the service somehow (and do not want to couple these togther) - so add a service name
+          # think of google as the authentication provider and 'picasa, g+, gmail, etc as the services'
+          property :service,                :type => 'string',  :index => 'not_analyzed'
+          property :provider,               :type => 'string',  :index => 'not_analyzed'
+          property :external_id,            :type => 'string',  :index => 'not_analyzed'
+          property :owner_uid,              :type => 'string',  :index => 'not_analyzed'
+          property :owner_nickname,         :type => 'string',  :index => 'not_analyzed'
+          property :owner_birdbox_nickname, :type => 'string',  :index => 'not_analyzed'
+          property :owner_avatar,           :type => 'string',  :index => 'not_analyzed'
+          property :album,                  :type => 'string',  :index => 'not_analyzed'
+          property :title,                  :type => 'string',  :index => 'analyzed',     :analyzer => 'standard'
+          property :url,                    :type => 'string',  :index => 'not_analyzed'
+          property :type,                   :type => 'string',  :index => 'not_analyzed'
+          property :tags,                   :type => 'string',  :index => 'not_analyzed', :default => [ ]
+          
+          property :people,                  :type => 'object',
+            :properties => {
+              :id => {:type => "string", :index => :not_analyzed },
+              :name => { :type => "string", :index => :not_analyzed }
+            }
+
+          property :height,                 :type => 'integer', :index => 'no'
+          property :width,                  :type => 'integer', :index => 'no'
+          property :created_at,             :type => 'date',    :index => 'not_analyzed'
+          property :updated_at,             :type => 'date',    :index => 'not_analyzed'
+          property :uploaded_at,            :type => 'date',    :index => 'not_analyzed'
+          property :taken_at,               :type => 'date',    :index => 'not_analyzed'
+          property :description,            :type => 'string',  :index => 'analyzed',     :analyzer => 'standard'
+          property :download_url,           :type => 'string',  :index => 'no'
+          property :thumbnail_url_small,    :type => 'string',  :index => 'no'
+          property :thumbnail_height_small, :type => 'integer', :index => 'no'
+          property :thumbnail_width_small,  :type => 'integer', :index => 'no'
+          property :thumbnail_url_medium,   :type => 'string',  :index => 'no'
+          property :thumbnail_height_medium,:type => 'integer', :index => 'no'
+          property :thumbnail_width_medium, :type => 'integer', :index => 'no'
+          property :thumbnail_url_large,    :type => 'string',  :index => 'no'
+          property :thumbnail_height_large, :type => 'integer', :index => 'no'
+          property :thumbnail_width_large,  :type => 'integer', :index => 'no'
+          property :html,                   :type => 'string',  :index => 'no'
+          property :owned,                  :type => 'boolean', :index => 'not_analyzed'
+          property :removed,                :type => 'boolean', :index => 'not_analyzed'
+        end
+      end
+
+      # Create the mappings to the ElasticSearch index.
+      self.create_mappings
 
       # Only saves a resource if it does not already exist or if its tags or people tagged
       # have been modified. Updating a search index is an expensive operation and
       # since we are constantly rescanning resources, this method should help
       # migigate the impact on search performance.
       before_save do
-        self.id = "#{self.provider}:#{self.external_id}"
         @_updated = false
-        resource = Resource.find(self.id) # the active flag is impacting the finder and making havoc
-        # can also set removed
-        if resource and resource.tags == self.tags and resource.people == self.people and resource.removed == self.removed
-          return false
-        end
+        self.id = "#{self.provider}:#{self.external_id}"
         self.created_at = (self.created_at || Time.now).utc
         self.updated_at = Time.now.utc
+        #resource = Resource.find(self.id) # the active flag is impacting the finder and making havoc
+        #if resource and resource.tags == self.tags and resource.people == self.people and resource.removed == self.removed
+        #  return false
+        #end
         true
       end
 
@@ -88,6 +81,14 @@ module Birdbox
       # the index to be updated.
       after_save do
         @_updated = true
+      end
+
+
+      def self.inherited(subclass)
+        #index_prefix ""
+        #index_name "resources"
+        #document_type "resource"
+        subclass.create_mappings
       end
 
       # When a 3rd party (such as facebook) yields multiple thumbnails pick the one that is closest (larger preferred) to the desired width
