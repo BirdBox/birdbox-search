@@ -70,10 +70,13 @@ module Birdbox
         self.id = "#{self.provider}:#{self.external_id}"
         self.created_at = (self.created_at || Time.now).utc
         self.updated_at = Time.now.utc
-        #resource = Resource.find(self.id) # the active flag is impacting the finder and making havoc
-        #if resource and resource.tags == self.tags and resource.people == self.people and resource.removed == self.removed
-        #  return false
-        #end
+        # Often the save() method is called for every resource that is discovered. Actually updating
+        # the index that often is going to cause performance issues.  So, only update the resource
+        # if certain properties have changed.
+        resource = Resource.find(self.id)
+        if resource and resource.tags == self.tags and resource.people == self.people and resource.removed == self.removed
+          return false
+        end
         true
       end
 
