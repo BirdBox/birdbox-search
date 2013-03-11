@@ -212,5 +212,10 @@ describe Birdbox::Search::Nest do
     results = Nest.fetch(sources, :exclude => ['facebook:1', 'facebook:4'])
     results.count.must_equal(2)
   end
+  
+  it "must be able to fetch resources by ideez" do
+    results = Nest.fetch_ids(['facebook:1', 'facebook:4'])
+    results.count.must_equal(2)
+  end
 
 end
