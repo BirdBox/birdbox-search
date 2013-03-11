@@ -140,14 +140,23 @@ module Birdbox
       end
 
       # return all matching resources - used for nest exemptions fetching
-      def self.fetch_ids(ids)
-        search = Tire.search Birdbox::Search::Resource.index_name, :query => 
-        {
-            "ids" => {
-                "type" => Birdbox::Search::Resource.document_type,
-                "values" => ids
-            }
+      # if owner_uid colelction, then only resources for all this owner's authentication uid's
+      def self.fetch_ids(ids, owner_uid=nil)
+        query = {
+          :query => 
+          {
+              :filtered => {
+                :query => {
+                  :ids => {
+                    :type => Birdbox::Search::Resource.document_type,
+                    :values => ids
+                  }
+                }
+              }
+          }
         }
+        query[:query][:filtered][:filter] = {:terms => {:owner_uid => owner_uid}} if owner_uid
+        search = Tire.search Birdbox::Search::Resource.index_name, query
         search.results
       end
 

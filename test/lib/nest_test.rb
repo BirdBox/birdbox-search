@@ -214,8 +214,13 @@ describe Birdbox::Search::Nest do
   end
   
   it "must be able to fetch resources by ideez" do
-    results = Nest.fetch_ids(['facebook:1', 'facebook:4'])
+    results = Nest.fetch_ids(['facebook:1', 'facebook:4', 'twitter:2'], ['100001'])
     results.count.must_equal(2)
+  end
+  
+  it "must be able to fetch resources by ideez all users" do
+    results = Nest.fetch_ids(['facebook:1', 'facebook:4', 'twitter:2'])
+    results.count.must_equal(3)
   end
 
 end
