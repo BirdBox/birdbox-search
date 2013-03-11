@@ -49,7 +49,6 @@ module Birdbox
         "(provider:\"#{provider}\" AND ((#{q.join(' OR ')}) AND removed:false))"
       end
 
-
       # Fetches all resources associated with a nest. A resource belongs to a
       # nest if its tag matches one or more of the nest's tags and is owned by
       # one of the nest's owners.
@@ -137,9 +136,20 @@ module Birdbox
           from (page - 1) * page_size
           size page_size
         }
-        search.results    
+        search.results
       end
 
+      # return all matching resources - used for nest exemptions fetching
+      def self.fetch_ids(ids)
+        search = Tire.search Birdbox::Search::Resource.index_name, :query => 
+        {
+            "ids" => {
+                "type" => Birdbox::Search::Resource.document_type,
+                "values" => ids
+            }
+        }
+        search.results
+      end
 
       # Finds the ids of people that are tagged in the resources matching the
       # provided owners and tags.
