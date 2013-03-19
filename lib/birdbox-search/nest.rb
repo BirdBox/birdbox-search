@@ -123,11 +123,15 @@ module Birdbox
               end
             }
           }
+          
+          if opts[:external_id]
+            q = "(#{q}) AND (external_id:[#{opts[:external_id]} TO 0])"
+          end
 
           if opts[:sort_by]
             sort { 
               by opts[:sort_by], opts[:sort_direction] || 'desc' 
-              by :external_id, 'asc'
+              by :external_id, 'desc'
             }
           end
 
