@@ -109,6 +109,10 @@ module Birdbox
           until_date = opts[:until] ? Time.at(opts[:until].to_i).utc : Time.now.utc
           q = "(#{q}) AND (uploaded_at:[#{from_date.strftime("%Y-%m-%dT%H:%M:%S")} TO #{until_date.strftime("%Y-%m-%dT%H:%M:%S")}])"
         end
+        
+        if opts[:external_id]
+          q = "(#{q}) AND (external_id:[#{opts[:external_id]} TO 0])"
+        end
 
         #puts "\n#{q}\n"
         search = Tire.search(Birdbox::Search::Resource.index_name) {
@@ -123,10 +127,6 @@ module Birdbox
               end
             }
           }
-          
-          if opts[:external_id]
-            q = "(#{q}) AND (external_id:[#{opts[:external_id]} TO 0])"
-          end
 
           if opts[:sort_by]
             sort { 
