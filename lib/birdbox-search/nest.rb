@@ -1,3 +1,5 @@
+require 'time'
+
 module Birdbox
   module Search
 
@@ -6,48 +8,139 @@ module Birdbox
     # to the nest.
     class Nest
 
-      # Build a Lucene query based on the values found in the sources parameter.
-      #
-      # @param [Hash] sources a hash containing one or more providers, each specifying
-      #   tags and/or albums.
-      # @return [String] a Lucene query string to be used against the Resources index
-      #
-      def self.build_query_string(sources)
-        sources.map { |provider, filters|
-          provider_query(provider, filters)
-        }.join(' OR ')
-      end
-
-
-      # Build the provider-specific query.  An example of a provider is facebook,
+      # Build the provider-specific filter.  An example of a provider is facebook,
       # which may declare a list of tags and/or albums.
       #
       # @param [String] provider the provider name
       # @param [Hash] filters a list of tags and/or albums
       #
-      def self.provider_query(provider, filters)
-        q = [ ]
-        if filters['albums'] and not filters['albums'].empty?
-          q.push(
-            #"(#{
-              filters.fetch('albums', [ ]).map { |album| 
-                "album:\"#{album}\""
-              }.join(' OR ')
-            #})"
-          )
+      def self.build_provider_statement(provider, data)
+        filter = { }
+        case provider.to_s.strip.downcase
+          when "facebook"
+            albums = data.fetch('albums', [ ])
+            if albums.empty?
+              raise ArgumentError.new 'Query must specify at least one facebook album.'
+            else
+              filter[:and] = [
+                {:term => {:provider => 'facebook'}},
+                {:terms => {:album => albums}},
+              ] 
+            end
+          when "instagram"
+            tags = data.fetch('tags', { })
+            if tags.empty?
+              raise ArgumentError.new 'Query must specify at least one instagram tag.'
+            elsif tags.count == 1
+              filter[:and] = [
+                {:term => {:provider => 'instagram'}},
+                {:term => {:owner_uid => tags.keys.first}},
+                {:terms => {:tags => tags.values.first}},
+              ]
+            else
+               filter[:and] = [
+                {:term => {:provider => 'instagram'}},
+                {
+                  :or => tags.inject([ ]) do |memo, (owner,tags)|
+                    memo.push({
+                      :and => [
+                        {:term => {:owner_uid => owner}},
+                        {:terms => {:tags => tags}}
+                      ]
+                    })
+                    memo
+                  end
+                }
+              ] 
+            end
+          else
+            raise ArgumentError.new("invalid provider (#{provider}")
         end
-       
-        if filters['tags'] and not filters['tags'].empty?
-          q.push(
-            #"(#{
-              filters.fetch('tags', { }).map { |owner,tags|
-                "(owner_uid:\"#{owner}\" AND (#{tags.map {|tag| "tags:\"#{tag}\""}.join(' OR ')}))"
-              }.join(' OR ')
-            #})"
-          )
-        end
-        "(provider:\"#{provider}\" AND ((#{q.join(' OR ')}) AND removed:false))"
+        filter
       end
+
+
+      # Builds an ElasticSearch query based on the values found in the sources parameter.
+      #
+      # @param [Hash] sources a hash containing one or more providers, each specifying
+      #   tags and/or albums.
+      # @param [Hash] options a hash of optional parameters
+      # @return [Hash] a hash containing the ElasticSearch DSL payload.
+      #
+      def self.build_query_filter(sources, options)
+        opts = {
+          :since          => nil,           # default to the beginning of time
+          :until          => nil,           # default to the end of time
+          :exclude        => [ ]            # excluded resource ids
+        }.merge(options)
+
+        filters = [ ]
+
+        # Build the provider statements from the `sources` parameter.  At least one
+        # provider is required.  If there's more than one provider, wrap all of the 
+        # provider queries into an `or` block.
+        providers = sources.map { |provider, data|
+          build_provider_statement(provider, data) 
+        }
+
+        if providers.empty?
+          raise ArgumentError.new('Query must specify at least one provider.')
+        elsif providers.count == 1
+          filters.push(providers.first)
+        else
+          filters.push({:or => providers})
+        end
+
+        # Limit the query to a specific date range if the `since` and/or `until` parameter
+        # have been specified.
+        if opts[:since] or opts[:until]
+          from_date = Time.at(opts[:since].to_i).utc
+          until_date = opts[:until] ? Time.at(opts[:until].to_i).utc : Time.now.utc
+          filters.push({
+            :range => {
+              :uploaded_at => {
+                :from => from_date.iso8601,
+                :to => until_date.iso8601,
+                :include_lower => true,
+                :include_upper => true
+              }
+            }
+          })
+        end
+
+        # The external_id of a resource can be used to resolve pagination conflicts when 
+        # several resources have the same uploaded_at timestamp.
+        if opts[:external_id]
+          filters.push({
+            :range => {
+              :external_id => {
+                :from => 0,
+                :to => opts[:external_id],
+                :include_lower => true,
+                :include_upper => true
+              }
+            }
+          })
+        end 
+
+        # Check if there are any resources that should be excluded.  If so, the query will need to
+        # be modified to NOT include the items on the list.
+        unless (opts[:exclude].empty?)
+          filters.push({
+            :not => {:terms => { :_id => opts[:exclude], :execution => 'or'}}
+          })
+        end
+
+        # Don't include resources that have been removed from the provider (e.g. a user
+        # deletes an image from Facebook).
+        filters.push({:term => {:removed => false}})
+
+        # Last but not least, wrap the whole thing into a `and` block.
+        {:and => filters }
+
+      end
+
+
 
       # Fetches all resources associated with a nest. A resource belongs to a
       # nest if its tag matches one or more of the nest's tags and is owned by
@@ -56,16 +149,12 @@ module Birdbox
       # @example
       #   sources = {
       #     'facebook' => {
-      #       'albums' => %w(132212),
-      #       'tags' => { 
-      #         '144251' => %w(kiddos vacation),
-      #         '235967' => %w(mexico)
-      #       }
+      #       'albums' => %w(132212 687261)
       #     },
       #     'instagram' => {
       #       'tags' => {
       #         '156832' => %w(springbreak),
-      #         '124560' => %w(cabo) 
+      #         '124560' => %w(cabo mexico) 
       #       }
       #     }
       #   }
@@ -80,11 +169,6 @@ module Birdbox
       # @return [Tire::Results::Collection] an iterable collection of results
       #
       def self.fetch(sources, options = { })
-        # if no query parameters go away
-        if sources.keys.count == 0
-          return []
-        end
-        
         opts = {
           :sort_by        => :uploaded_at,  # sort field
           :sort_direction => 'desc',        # sort direction            
@@ -92,22 +176,13 @@ module Birdbox
           :page_size      => 10,            # number of items to return per page
           :since          => nil,           # default to the beginning of time
           :until          => nil,           # default to the end of time
-          :exclude        => nil            # excluded resource ids
+          :exclude        => [ ],           # excluded resource ids
+          :external_id    => nil            # used to resolve conflicts when uploaded_at is not unique
         }.merge(options)
 
-        # Build the query string based the 'sources' parameter
-        q = self.build_query_string(sources)
-
-        # Do not include resources matching the provider:id (e.g. facebook:123456) combination.
-        #if opts[:exclude] and not opts[:exclude].empty?
-        #  q = "(#{q}) AND ( )" 
-        #end
-
-        # Build the date range query if this request is time-bounded.
-        if opts[:since] or opts[:until]
-          from_date = Time.at(opts[:since].to_i).utc
-          until_date = opts[:until] ? Time.at(opts[:until].to_i).utc : Time.now.utc
-          q = "(#{q}) AND (uploaded_at:[#{from_date.strftime("%Y-%m-%dT%H:%M:%S")} TO #{until_date.strftime("%Y-%m-%dT%H:%M:%S")}])"
+        # if no query parameters go away
+        if sources.keys.count == 0
+          return []
         end
         
         # NEED this so if we have multiple resources (>= page size) w/ the same uploaded_at timestamp we can get the next batch
@@ -115,34 +190,32 @@ module Birdbox
           q = "(#{q}) AND (external_id:[0 TO #{opts[:external_id]}])"
         end
 
-        #puts "\n#{q}\n"
-        search = Tire.search(Birdbox::Search::Resource.index_name) {
-          query {
-            filtered {
-              query { string q } 
-              # Don't include resources that have been explicitly excluded.
-              if opts[:exclude] and not opts[:exclude].empty?
-                filter :not, {
-                  :terms => {:_id => opts[:exclude], :execution => 'or'}
-                }
-              end
+        # Select the options needed to build the query filter into their own hash.
+        filter_options = opts.select{ |k,v| [:since, :until, :exclude, :external_id].include?(k) }
+        
+        query = {
+          :query => {
+            :filtered => {
+              :query => { :match_all => { } },
+              :filter => self.build_query_filter(sources, filter_options)
             }
-          }
-
-          if opts[:sort_by]
-            sort { 
-              by opts[:sort_by], opts[:sort_direction] || 'desc' 
-              by :external_id, 'desc'
-            }
-          end
-
-          page = opts[:page].to_i
-          page_size = opts[:page_size].to_i
-          from (page - 1) * page_size
-          size page_size
+          },
+          :sort => [
+            { :external_id => 'asc' }
+          ],
+          :from => opts[:page_size].to_i * (opts[:page].to_i - 1),
+          :size => opts[:page_size].to_i 
         }
+
+        # Add the custom search parameter if one was provided.
+        if opts[:sort_by]
+          query[:sort].insert(0, {opts[:sort_by] => opts[:sort_direction]}) 
+        end
+
+        search = Tire.search 'resources', query
         search.results
       end
+
 
       # return all matching resources - used for nest exemptions fetching
       # if owner_uid colelction, then only resources for all this owner's authentication uid's
@@ -193,16 +266,37 @@ module Birdbox
       #
       def self.find_tagged_people(sources, options={ })
         opts = {
-          :size => 10
+          :page_size      => 10,            # number of items to return per page
+          :since          => nil,           # default to the beginning of time
+          :until          => nil,           # default to the end of time
+          :exclude        => [ ]            # excluded resource ids
         }.merge(options)
-        # Build the query string based the 'sources' parameter
-        q = self.build_query_string(sources)
-        Resource.search {
-          query { string q }
-          facet('people') { terms 'people.id', :size => opts[:size] }
-        }.facets['people']['terms'].map do |f|
+        
+        # Select the options needed to build the query filter into their own hash.
+        filter_options = opts.select{ |k,v| [:since, :until, :exclude].include?(k) }
+
+        # Build the query based the 'sources' parameter
+         query = {
+          :query => {
+            :filtered => {
+              :query => { :match_all => { } },
+              :filter => self.build_query_filter(sources, filter_options)
+            }
+          },
+          :facets => {
+            :people => {
+              :terms => {
+                :field => 'people.id'
+              }
+            }
+          } 
+        }
+
+        search = Tire.search 'resources', query
+        search.results.facets['people']['terms'].map do |f|
           [f['term'], f['count']]
         end
+
       end
 
     end

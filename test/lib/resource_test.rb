@@ -14,14 +14,14 @@ describe Birdbox::Search::Resource do
     subject.create_elasticsearch_index
     @items = [ 
       subject.new(:id => 'facebook:1', :provider => "facebook", :external_id => "1",
-        :owner_uid => "123456", :owner_nickname => "me", :title => "Purple #hashtag1 #hashtag2 sunset",
+        :owner_uid => "123456", :owner_birdbox_nickname => "me", :title => "Purple #hashtag1 #hashtag2 sunset",
         :type => "photo", :description => "A purple sunset #hashtag1 off the coast of Isla Vista, CA",
         :url => "http://www.example.com/foo.jpg", :tags => %w(birdbox one), :removed => false, 
         :height => 640, :width => 480, :created_at => Time.now.utc),
 
       subject.new(:id => 'facebook:2', :provider => "facebook", :external_id => "2", 
         :title => "No stone left unturned", :type => "photo",
-        :owner_uid => "123456", :owner_nickname => "me", :title => "",
+        :owner_uid => "123456", :owner_birdbox_nickname => "me", :title => "",
         :url => "http://www.example.com/bar.jpg", :tags => %w(birdbox two), :removed => false,
         :height => 640, :width => 480, :created_at => Time.now.utc),
 
