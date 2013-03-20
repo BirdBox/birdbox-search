@@ -10,7 +10,7 @@ module Birdbox
       # A class method defining the properties and mappings of the `resources` index.
       def self.create_mappings
         index_prefix ""
-        index_name "resources"
+        index_name "resources_v1"
         document_type "resource"
         mapping do
           # user has many authentication which has many services, so if we EVER want to tie the resource to a service, unfortunately
@@ -25,12 +25,14 @@ module Birdbox
           property :source_uid,             :type => 'string',  :index => 'not_analyzed'
           property :source_avatar,          :type => 'string',  :index => 'not_analyzed'
           property :source_nickname,        :type => 'string',  :index => 'not_analyzed'
+          # DEPRECATED
           property :album,                  :type => 'string',  :index => 'not_analyzed'
           property :title,                  :type => 'string',  :index => 'analyzed',     :analyzer => 'standard'
           property :url,                    :type => 'string',  :index => 'not_analyzed'
           property :type,                   :type => 'string',  :index => 'not_analyzed'
           property :tags,                   :type => 'string',  :index => 'not_analyzed', :default => [ ]
-          
+          property :albums,                 :type => 'string',  :index => 'not_analyzed', :default => [ ]
+
           property :people,                  :type => 'object',
             :properties => {
               :id => {:type => "string", :index => :not_analyzed },
@@ -39,6 +41,8 @@ module Birdbox
 
           property :height,                 :type => 'integer', :index => 'no'
           property :width,                  :type => 'integer', :index => 'no'
+          property :download_height,        :type => 'integer', :index => 'no'
+          property :download_width,         :type => 'integer', :index => 'no'
           property :created_at,             :type => 'date',    :index => 'not_analyzed'
           property :updated_at,             :type => 'date',    :index => 'not_analyzed'
           property :uploaded_at,            :type => 'date',    :index => 'not_analyzed'
@@ -76,10 +80,13 @@ module Birdbox
         # the index that often is going to cause performance issues.  So, only update the resource
         # if certain properties have changed.
         resource = Resource.find(self.id)
-        if resource and resource.tags == self.tags and resource.people == self.people and resource.removed == self.removed
-          return false
-        end
-        true
+
+        # Check specific resource attributes to decide whether to update the index.  If the
+        # following expression returns `false`, the save operation will be aborted.
+        resource.tags and resource.tags != self.tags and
+          resource.people and resource.people != self.people and
+          resource.album != self.album and
+          resource.removed != self.removed
       end
 
       # Set the @_updated flag to signal that the save operation caused
