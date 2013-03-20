@@ -108,6 +108,21 @@ module Birdbox
           })
         end
 
+        # The external_id of a resource can be used to resolve pagination conflicts when 
+        # several resources have the same uploaded_at timestamp.
+        if opts[:external_id]
+          filters.push({
+            :range => {
+              :external_id => {
+                :from => 0,
+                :to => opts[:external_id],
+                :include_lower => true,
+                :include_upper => true
+              }
+            }
+          })
+        end 
+
         # Check if there are any resources that should be excluded.  If so, the query will need to
         # be modified to NOT include the items on the list.
         unless (opts[:exclude].empty?)
@@ -161,7 +176,8 @@ module Birdbox
           :page_size      => 10,            # number of items to return per page
           :since          => nil,           # default to the beginning of time
           :until          => nil,           # default to the end of time
-          :exclude        => [ ]            # excluded resource ids
+          :exclude        => [ ],           # excluded resource ids
+          :external_id    => nil            # used to resolve conflicts when uploaded_at is not unique
         }.merge(options)
 
         # if no query parameters go away
@@ -170,7 +186,7 @@ module Birdbox
         end
 
         # Select the options needed to build the query filter into their own hash.
-        filter_options = opts.select{ |k,v| [:since, :until, :exclude].include?(k) }
+        filter_options = opts.select{ |k,v| [:since, :until, :exclude, :external_id].include?(k) }
         
         query = {
           :query => {
