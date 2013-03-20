@@ -112,7 +112,7 @@ module Birdbox
         
         # NEED this so if we have multiple resources (>= page size) w/ the same uploaded_at timestamp we can get the next batch
         if opts[:external_id]
-          q = "(#{q}) AND (0 TO external_id:[#{opts[:external_id]}])"
+          q = "(#{q}) AND (external_id:[0 TO #{opts[:external_id]}])"
         end
 
         #puts "\n#{q}\n"
