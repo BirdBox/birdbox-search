@@ -110,8 +110,9 @@ module Birdbox
           q = "(#{q}) AND (uploaded_at:[#{from_date.strftime("%Y-%m-%dT%H:%M:%S")} TO #{until_date.strftime("%Y-%m-%dT%H:%M:%S")}])"
         end
         
+        # NEED this so if we have multiple resources (>= page size) w/ the same uploaded_at timestamp we can get the next batch
         if opts[:external_id]
-          q = "(#{q}) AND (external_id:[#{opts[:external_id]} TO 0])"
+          q = "(#{q}) AND (0 TO external_id:[#{opts[:external_id]}])"
         end
 
         #puts "\n#{q}\n"
