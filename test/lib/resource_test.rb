@@ -26,7 +26,7 @@ describe Birdbox::Search::Resource do
         :owner_uid => "123456", :owner_birdbox_nickname => "me", :album => '1', :title => "Purple #hashtag1 #hashtag2 sunset",
         :type => "photo", :description => "A purple sunset #hashtag1 off the coast of Isla Vista, CA",
         :url => "http://www.example.com/foo.jpg", :tags => %w(birdbox one), :removed => false, 
-        :height => 640, :width => 480, :created_at => Time.now.utc),
+        :download_url => "http://www.example.com/foo.jpg", :download_height => 640, :download_width => 480, :created_at => Time.now.utc),
 
       subject.new(:id => Digest::MD5.hexdigest(['facebook', '1', '2'].join(':')), 
         :provider => "facebook", 
@@ -34,19 +34,19 @@ describe Birdbox::Search::Resource do
         :title => "No stone left unturned", :type => "photo", :album => '1',
         :owner_uid => "123456", :owner_birdbox_nickname => "me", :title => "",
         :url => "http://www.example.com/bar.jpg", :tags => %w(birdbox two), :removed => false,
-        :height => 640, :width => 480, :created_at => Time.now.utc),
+        :download_url => "http://www.example.com/bar.jpg", :download_height => 640, :download_width => 480, :created_at => Time.now.utc),
 
       subject.new(:id => Digest::MD5.hexdigest(['facebook', '2', '3'].join(':')), 
         :provider => "facebook", :external_id => "3",
         :title => "That looks delicious", :type => "photo", :album => '2',
         :url => "http://www.example.com/baz.jpg", :tags => %w(birdbox three), :removed => false,
-        :height => 640, :width => 480, :created_at => Time.now.utc),
+        :download_url => "http://www.example.com/baz.jpg", :download_height => 640, :download_width => 480, :created_at => Time.now.utc),
 
       subject.new(:id => Digest::MD5.hexdigest(['facebook', '2', '4'].join(':')), 
         :provider => "facebook", :external_id => "4",
         :title => "Tags good", :type => "photo", :url => "http://www.example.com/biz.jpg",
         :tags => ['birdbox-tokenizer', 'three'], :removed => false, :album => '2',
-        :height => 640, :width => 480, :created_at => Time.now.utc),
+        :download_url => "http://www.example.com/biz.jpg", :download_height => 640, :download_width => 480, :created_at => Time.now.utc),
     ]
     subject.index.import(@items)
     subject.index.refresh

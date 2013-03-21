@@ -39,8 +39,6 @@ module Birdbox
               :name => { :type => "string", :index => :not_analyzed }
             }
 
-          property :height,                 :type => 'integer', :index => 'no'
-          property :width,                  :type => 'integer', :index => 'no'
           property :download_height,        :type => 'integer', :index => 'no'
           property :download_width,         :type => 'integer', :index => 'no'
           property :created_at,             :type => 'date',    :index => 'not_analyzed'
