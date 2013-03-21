@@ -193,18 +193,32 @@ describe Birdbox::Search::Nest do
         }
       }
     }
-    results = Nest.fetch(sources, :exclude => ['facebook:1', 'instagram:3'])
+    exclude = [
+      Digest::MD5.hexdigest('facebook:1:1'),
+      Digest::MD5.hexdigest('instagram::3'),
+    ]
+    results = Nest.fetch(sources, :exclude => exclude)
     results.count.must_equal(6)
   end
 
   
   it "must be able to fetch resources by ideez" do
-    results = Nest.fetch_ids(['facebook:1', 'facebook:4', 'instagram:2'], ['100001'])
+    ids = [
+      Digest::MD5.hexdigest('facebook:1:1'),
+      Digest::MD5.hexdigest('facebook:2:4'),
+      Digest::MD5.hexdigest('instagram::2'),
+    ]
+    results = Nest.fetch_ids(ids, ['100001'])
     results.count.must_equal(2)
   end
   
   it "must be able to fetch resources by ideez all users" do
-    results = Nest.fetch_ids(['facebook:1', 'facebook:4', 'instagram:2'])
+    ids = [
+      Digest::MD5.hexdigest('facebook:1:1'),
+      Digest::MD5.hexdigest('facebook:2:4'),
+      Digest::MD5.hexdigest('instagram::2'),
+    ]
+    results = Nest.fetch_ids(ids)
     results.count.must_equal(3)
   end
 

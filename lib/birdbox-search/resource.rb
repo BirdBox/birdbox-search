@@ -1,3 +1,5 @@
+require 'digest/md5'
+
 module Birdbox
   module Search
 
@@ -25,7 +27,6 @@ module Birdbox
           property :source_uid,             :type => 'string',  :index => 'not_analyzed'
           property :source_avatar,          :type => 'string',  :index => 'not_analyzed'
           property :source_nickname,        :type => 'string',  :index => 'not_analyzed'
-          # DEPRECATED
           property :album,                  :type => 'string',  :index => 'not_analyzed'
           property :title,                  :type => 'string',  :index => 'analyzed',     :analyzer => 'standard'
           property :url,                    :type => 'string',  :index => 'not_analyzed'
@@ -72,7 +73,8 @@ module Birdbox
       # migigate the impact on search performance.
       before_save do
         @_updated = false
-        self.id = "#{self.provider}:#{self.external_id}"
+        self.id = Digest::MD5.hexdigest([self.provider, self.album, self.external_id].join(':'))
+
         self.created_at = (self.created_at || Time.now).utc
         self.updated_at = Time.now.utc
         # Often the save() method is called for every resource that is discovered. Actually updating

@@ -1,3 +1,4 @@
+require 'digest/md5'
 require_relative '../test_helper'
 
 describe Birdbox::Search::Resource do
@@ -19,26 +20,32 @@ describe Birdbox::Search::Resource do
     index_alias.save
 
     @items = [ 
-      subject.new(:id => 'facebook:1', :provider => "facebook", :external_id => "1",
-        :owner_uid => "123456", :owner_birdbox_nickname => "me", :title => "Purple #hashtag1 #hashtag2 sunset",
+      subject.new(:id => Digest::MD5.hexdigest(['facebook', '1', '1'].join(':')), 
+        :provider => "facebook", 
+        :external_id => "1",
+        :owner_uid => "123456", :owner_birdbox_nickname => "me", :album => '1', :title => "Purple #hashtag1 #hashtag2 sunset",
         :type => "photo", :description => "A purple sunset #hashtag1 off the coast of Isla Vista, CA",
         :url => "http://www.example.com/foo.jpg", :tags => %w(birdbox one), :removed => false, 
         :height => 640, :width => 480, :created_at => Time.now.utc),
 
-      subject.new(:id => 'facebook:2', :provider => "facebook", :external_id => "2", 
-        :title => "No stone left unturned", :type => "photo",
+      subject.new(:id => Digest::MD5.hexdigest(['facebook', '1', '2'].join(':')), 
+        :provider => "facebook", 
+        :external_id => "2", 
+        :title => "No stone left unturned", :type => "photo", :album => '1',
         :owner_uid => "123456", :owner_birdbox_nickname => "me", :title => "",
         :url => "http://www.example.com/bar.jpg", :tags => %w(birdbox two), :removed => false,
         :height => 640, :width => 480, :created_at => Time.now.utc),
 
-      subject.new(:id => 'facebook:3', :provider => "facebook", :external_id => "3",
-        :title => "That looks delicious", :type => "photo",
+      subject.new(:id => Digest::MD5.hexdigest(['facebook', '2', '3'].join(':')), 
+        :provider => "facebook", :external_id => "3",
+        :title => "That looks delicious", :type => "photo", :album => '2',
         :url => "http://www.example.com/baz.jpg", :tags => %w(birdbox three), :removed => false,
         :height => 640, :width => 480, :created_at => Time.now.utc),
 
-      subject.new(:id => 'facebook:4', :provider => "facebook", :external_id => "4",
+      subject.new(:id => Digest::MD5.hexdigest(['facebook', '2', '4'].join(':')), 
+        :provider => "facebook", :external_id => "4",
         :title => "Tags good", :type => "photo", :url => "http://www.example.com/biz.jpg",
-        :tags => ['birdbox-tokenizer', 'three'], :removed => false,
+        :tags => ['birdbox-tokenizer', 'three'], :removed => false, :album => '2',
         :height => 640, :width => 480, :created_at => Time.now.utc),
     ]
     subject.index.import(@items)
@@ -57,12 +64,17 @@ describe Birdbox::Search::Resource do
   end
 
   it "must be retrievable by id" do
-    r = subject.find('facebook:1')
+    id = Digest::MD5.hexdigest(['facebook', '1', '1'].join(':'))
+    r = subject.find(id)
     r.url.must_equal(@items.first.url) 
   end
 
   it "must be able to retrieve multiple ids" do
-    r = subject.find(['facebook:1', 'facebook:2'])
+    ids = [
+      Digest::MD5.hexdigest(['facebook', '1', '1'].join(':')),
+      Digest::MD5.hexdigest(['facebook', '1', '2'].join(':'))
+    ]
+    r = subject.find(ids)
     r.size.must_equal(2)
   end
 
@@ -108,20 +120,23 @@ describe Birdbox::Search::Resource do
     r.type = 'photo'
     r.url = 'http://www.example.com/cant-be-unseen.jpg'
     r.save
-    result = subject.find([r.provider, r.external_id].join(':'))
+
+    result = subject.find(r.id)
     result.wont_be_nil
     result.created_at.wont_be_nil
   end
 
   it "must not update existing records when using the 'persist' method" do
-    r = subject.find('facebook:1')
+    id = Digest::MD5.hexdigest(['facebook', '1', '1'].join(':'))
+    r = subject.find(id)
     r.title = 'booya!'
     r.save.updated?.must_equal(false)
     subject.find(r.id).title.wont_equal(r.title)
   end
 
   it "must update existing records if the tags have changed" do
-    r = subject.find('facebook:1')
+    id = Digest::MD5.hexdigest(['facebook', '1', '1'].join(':'))
+    r = subject.find(id)
     r.title = 'booya!'
     r.tags << "danger"
     r.removed = true
