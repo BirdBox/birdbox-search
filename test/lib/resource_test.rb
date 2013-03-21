@@ -12,6 +12,12 @@ describe Birdbox::Search::Resource do
 
     subject.index.delete
     subject.create_elasticsearch_index
+
+    index_alias = Tire::Alias.new
+    index_alias.name('resources')
+    index_alias.index('resources_v1')
+    index_alias.save
+
     @items = [ 
       subject.new(:id => 'facebook:1', :provider => "facebook", :external_id => "1",
         :owner_uid => "123456", :owner_birdbox_nickname => "me", :title => "Purple #hashtag1 #hashtag2 sunset",

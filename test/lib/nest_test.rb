@@ -14,8 +14,15 @@ describe Birdbox::Search::Nest do
   before do
     Resource.index.delete
     Resource.create_elasticsearch_index
+
+    index_alias = Tire::Alias.new
+    index_alias.name('resources')
+    index_alias.index('resources_v1')
+    index_alias.save
+
     Resource.index.import(Fixtures.resources)
     Resource.index.refresh
+
   end
   
   it "must be able to fetch resources for a single facebook album" do

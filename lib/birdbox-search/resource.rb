@@ -31,7 +31,6 @@ module Birdbox
           property :url,                    :type => 'string',  :index => 'not_analyzed'
           property :type,                   :type => 'string',  :index => 'not_analyzed'
           property :tags,                   :type => 'string',  :index => 'not_analyzed', :default => [ ]
-          property :albums,                 :type => 'string',  :index => 'not_analyzed', :default => [ ]
 
           property :people,                  :type => 'object',
             :properties => {
@@ -81,12 +80,16 @@ module Birdbox
         # if certain properties have changed.
         resource = Resource.find(self.id)
 
-        # Check specific resource attributes to decide whether to update the index.  If the
-        # following expression returns `false`, the save operation will be aborted.
-        resource.tags and resource.tags != self.tags and
-          resource.people and resource.people != self.people and
-          resource.album != self.album and
-          resource.removed != self.removed
+        # If the resource does not exist yet, then save it.
+        return true unless resource
+
+        # Otherwise check specific resource attributes to decide whether to update the
+        # index.  If the following expression returns `false`, the save operation will
+        # be aborted.
+        (resource.tags and resource.tags != self.tags) or
+          (resource.people and resource.people != self.people) or
+          (resource.album != self.album) or
+          (resource.removed != self.removed)
       end
 
       # Set the @_updated flag to signal that the save operation caused
@@ -165,7 +168,7 @@ module Birdbox
         end
       end
 
-      #
+      # A flag that is set when the resource is updated. 
       def updated?
         return @_updated
       end
