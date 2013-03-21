@@ -101,7 +101,7 @@ module Birdbox
               :uploaded_at => {
                 :from => from_date.iso8601,
                 :to => until_date.iso8601,
-                :include_lower => true,
+                :include_lower => false,
                 :include_upper => true
               }
             }
@@ -116,7 +116,7 @@ module Birdbox
               :external_id => {
                 :from => 0,
                 :to => opts[:external_id],
-                :include_lower => true,
+                :include_lower => false,
                 :include_upper => true
               }
             }
