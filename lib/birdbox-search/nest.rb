@@ -101,7 +101,7 @@ module Birdbox
               :uploaded_at => {
                 :from => from_date.iso8601,
                 :to => until_date.iso8601,
-                :include_lower => true,
+                :include_lower => false,
                 :include_upper => true
               }
             }
@@ -111,12 +111,19 @@ module Birdbox
         # The external_id of a resource can be used to resolve pagination conflicts when 
         # several resources have the same uploaded_at timestamp.
         if opts[:external_id]
+          # from_external_id = opts[:external_id]
+          # to_external_id  = 0
+          # if opt[:sort_direction].eql? 'asc' # if paging the other direction then flip the secondary sort as well 
+            # from_external_id = opts[:external_id]
+            # to_external_id  = nil # unbounded
+          # end
+          
+          # unbounded range query (sort order sets the boundaries and direction)
           filters.push({
             :range => {
               :external_id => {
-                :from => 0,
-                :to => opts[:external_id],
-                :include_lower => true,
+                :from => opts[:external_id],
+                :include_lower => false,
                 :include_upper => true
               }
             }
@@ -186,9 +193,9 @@ module Birdbox
         end
         
         # NEED this so if we have multiple resources (>= page size) w/ the same uploaded_at timestamp we can get the next batch
-        if opts[:external_id]
-          q = "(#{q}) AND (external_id:[0 TO #{opts[:external_id]}])"
-        end
+        # if opts[:external_id]
+          # q = "(#{q}) AND (external_id:[0 TO #{opts[:external_id]}])"
+        # end
 
         # Select the options needed to build the query filter into their own hash.
         filter_options = opts.select{ |k,v| [:since, :until, :exclude, :external_id].include?(k) }
@@ -201,7 +208,7 @@ module Birdbox
             }
           },
           :sort => [
-            { :external_id => 'asc' }
+            { :external_id => opts[:sort_direction] }
           ],
           :from => opts[:page_size].to_i * (opts[:page].to_i - 1),
           :size => opts[:page_size].to_i 
