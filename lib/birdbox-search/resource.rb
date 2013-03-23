@@ -88,13 +88,16 @@ module Birdbox
 
         # If the resource does not exist yet, then save it.
         return true unless resource
-
+        
+        # If new album coming in then save and also set member new album collection, so no need to maintain state on creation
+        @_new_albums = self.albums - ((resource.albums ? resource.albums : []) & self.albums)
+        
         # Otherwise check specific resource attributes to decide whether to update the
         # index.  If the following expression returns `false`, the save operation will
         # be aborted.
         (resource.tags and resource.tags != self.tags) or
           (resource.people and resource.people != self.people) or
-          (resource.albums and resource.albums != self.albums) or
+          (@_new_albums.count > 0) or
           (resource.removed != self.removed)
       end
 
@@ -151,6 +154,7 @@ module Birdbox
 
       # Default constructor
       def initialize(params={})
+        @_new_albums = []
         @_updated = false
         self.tags = []
         self.people = []
