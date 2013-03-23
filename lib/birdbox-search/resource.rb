@@ -90,15 +90,17 @@ module Birdbox
         return true unless resource
         
         # If new album coming in then save and also set member new album collection, so no need to maintain state on creation
+        # Also, keep in mind albums can be removed
         @_new_albums = self.albums - ((resource.albums ? resource.albums : []) & self.albums)
         resource.albums << @_new_albums
+        resource.removed = true if resource.albums.count == 0 # no more albums, so mark resource removed
         
         # Otherwise check specific resource attributes to decide whether to update the
         # index.  If the following expression returns `false`, the save operation will
         # be aborted.
         (resource.tags and resource.tags != self.tags) or
           (resource.people and resource.people != self.people) or
-          (@_new_albums.count > 0) or
+          (resource.albums != self.albums) or
           (resource.removed != self.removed)
       end
 
