@@ -7,6 +7,8 @@ module Birdbox
     # mappings are only applied when calling Resource.create_elasticsearch_index.
     # Using Resource.index.create will create a generic index with no mappings.
     class Resource
+      attr_accessor :remove_albums
+      attr_accessor :new_albums
       include Tire::Model::Persistence
 
       # A class method defining the properties and mappings of the `resources` index.
@@ -77,31 +79,39 @@ module Birdbox
       # migigate the impact on search performance.
       before_save do
         @_updated = false
-        self.id = Digest::MD5.hexdigest([self.provider, self.external_id].join(':'))
+        @id = Digest::MD5.hexdigest([@provider, @external_id].join(':'))
 
-        self.created_at = (self.created_at || Time.now).utc
-        self.updated_at = Time.now.utc
+        @created_at = (@created_at || Time.now).utc
+        @updated_at = Time.now.utc
         # Often the save() method is called for every resource that is discovered. Actually updating
         # the index that often is going to cause performance issues.  So, only update the resource
         # if certain properties have changed.
-        resource = Resource.find(self.id)
+        resource = Resource.find(@id)
 
         # If the resource does not exist yet, then save it.
         return true unless resource
         
+        # Album hash keys get converted to string if symbols, so clean that up just in case
+        stringify_album_keys
+        
         # If new album coming in then save and also set member new album collection, so no need to maintain state on creation
         # Also, keep in mind albums can be removed
-        @_new_albums = self.albums - ((resource.albums ? resource.albums : []) & self.albums)
-        resource.albums << @_new_albums
-        resource.removed = true if resource.albums.count == 0 # no more albums, so mark resource removed
+        if @remove_albums # remove the albums we are sending in (a little awkward but it works)
+          @albums = resource.albums - @albums
+          @removed = true if @albums.count == 0 # no more albums, so mark resource removed
+        else
+          @new_albums = @albums - ((resource.albums ? resource.albums : []) & @albums)
+          @albums = resource.albums + @new_albums
+          @removed = false if @new_albums.count > 0 # if albums added back, mark resource not removed any longer
+        end
         
         # Otherwise check specific resource attributes to decide whether to update the
         # index.  If the following expression returns `false`, the save operation will
         # be aborted.
-        (resource.tags and resource.tags != self.tags) or
-          (resource.people and resource.people != self.people) or
-          (resource.albums != self.albums) or
-          (resource.removed != self.removed)
+        (resource.tags and resource.tags != @tags) or
+          (resource.people and resource.people != @people) or
+          (resource.albums != @albums) or
+          (resource.removed != @removed)
       end
 
       # Set the @_updated flag to signal that the save operation caused
@@ -157,34 +167,45 @@ module Birdbox
 
       # Default constructor
       def initialize(params={})
-        @_new_albums = []
         @_updated = false
-        self.tags = []
-        self.people = []
-        self.albums = []
-        self.removed = false
+        @tags = []
+        @people = []
+        @albums = []
+        @removed = false
+        @remove_albums = false
+        @new_albums = []
         super(params)
       end
 
       # Parses hashtags from the resource's title and description attribute.
       def parse_hashtags
-        hashtags = self.title.to_s.downcase.scan(/\B#\w+/).uniq.each do |h|
+        hashtags = @title.to_s.downcase.scan(/\B#\w+/).uniq.each do |h|
           h.gsub!('#', '').strip!
         end
-        hashtags += self.description.to_s.downcase.scan(/\B#\w+/).uniq.each do |h|
+        hashtags += @description.to_s.downcase.scan(/\B#\w+/).uniq.each do |h|
           h.gsub!('#', '').strip!
         end
-        if self.tags
-          self.tags.concat hashtags.uniq
-          self.tags = self.tags.uniq
+        if @tags
+          @tags.concat hashtags.uniq
+          @tags = @tags.uniq
         else
-          self.tags = hashtags.uniq
+          @tags = hashtags.uniq
         end
       end
 
       # A flag that is set when the resource is updated. 
       def updated?
         return @_updated
+      end
+      
+      private
+      
+      def stringify_album_keys
+        @albums.each do |hash|
+          hash.keys.each do |key|
+            hash[(key.to_s rescue key) || key] = hash.delete(key)
+          end
+        end
       end
 
     end
