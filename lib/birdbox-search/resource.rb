@@ -91,6 +91,7 @@ module Birdbox
         
         # If new album coming in then save and also set member new album collection, so no need to maintain state on creation
         @_new_albums = self.albums - ((resource.albums ? resource.albums : []) & self.albums)
+        resource.albums << @_new_albums
         
         # Otherwise check specific resource attributes to decide whether to update the
         # index.  If the following expression returns `false`, the save operation will
