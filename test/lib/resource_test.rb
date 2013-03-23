@@ -34,8 +34,8 @@ describe Birdbox::Search::Resource do
         :url => "http://www.example.com/foo.jpg",
         :tags => %w(birdbox one),
         :removed => false, 
-        :height => 640,
-        :width => 480,
+        :download_height => 640,
+        :download_width => 480,
         :created_at => Time.now.utc),
 
       subject.new(:id => Digest::MD5.hexdigest(['facebook', '2'].join(':')), 
@@ -52,8 +52,8 @@ describe Birdbox::Search::Resource do
         :url => "http://www.example.com/bar.jpg",
         :tags => %w(birdbox two),
         :removed => false,
-        :height => 640,
-        :width => 480,
+        :download_height => 640,
+        :download_width => 480,
         :created_at => Time.now.utc),
 
       subject.new(:id => Digest::MD5.hexdigest(['facebook', '3'].join(':')), 
@@ -66,8 +66,8 @@ describe Birdbox::Search::Resource do
         :url => "http://www.example.com/baz.jpg",
         :tags => %w(birdbox three),
         :removed => false,
-        :height => 640,
-        :width => 480,
+        :download_height => 640,
+        :download_width => 480,
         :created_at => Time.now.utc),
 
       subject.new(:id => Digest::MD5.hexdigest(['facebook', '4'].join(':')), 
@@ -80,10 +80,11 @@ describe Birdbox::Search::Resource do
         :albums => [
           { :id => '2', :name => 'two' }
         ],
-        :height => 640,
-        :width => 480,
+        :download_height => 640,
+        :download_width => 480,
         :created_at => Time.now.utc),
     ]
+
     subject.index.import(@items)
     subject.index.refresh
   end

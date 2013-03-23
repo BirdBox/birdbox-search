@@ -1,5 +1,5 @@
 module Birdbox
   module Search
-    VERSION = "0.5.1"
+    VERSION = "0.6.2"
   end
 end
