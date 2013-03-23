@@ -20,33 +20,69 @@ describe Birdbox::Search::Resource do
     index_alias.save
 
     @items = [ 
-      subject.new(:id => Digest::MD5.hexdigest(['facebook', '1', '1'].join(':')), 
+      subject.new(:id => Digest::MD5.hexdigest(['facebook', '1'].join(':')), 
         :provider => "facebook", 
         :external_id => "1",
-        :owner_uid => "123456", :owner_birdbox_nickname => "me", :album => '1', :title => "Purple #hashtag1 #hashtag2 sunset",
-        :type => "photo", :description => "A purple sunset #hashtag1 off the coast of Isla Vista, CA",
-        :url => "http://www.example.com/foo.jpg", :tags => %w(birdbox one), :removed => false, 
-        :height => 640, :width => 480, :created_at => Time.now.utc),
+        :owner_uid => "123456",
+        :owner_birdbox_nickname => "me", 
+        :albums => [
+          { :id => '1', :name => 'one' }
+        ],
+        :title => "Purple #hashtag1 #hashtag2 sunset",
+        :type => "photo",
+        :description => "A purple sunset #hashtag1 off the coast of Isla Vista, CA",
+        :url => "http://www.example.com/foo.jpg",
+        :tags => %w(birdbox one),
+        :removed => false, 
+        :height => 640,
+        :width => 480,
+        :created_at => Time.now.utc),
 
-      subject.new(:id => Digest::MD5.hexdigest(['facebook', '1', '2'].join(':')), 
+      subject.new(:id => Digest::MD5.hexdigest(['facebook', '2'].join(':')), 
         :provider => "facebook", 
         :external_id => "2", 
-        :title => "No stone left unturned", :type => "photo", :album => '1',
-        :owner_uid => "123456", :owner_birdbox_nickname => "me", :title => "",
-        :url => "http://www.example.com/bar.jpg", :tags => %w(birdbox two), :removed => false,
-        :height => 640, :width => 480, :created_at => Time.now.utc),
+        :title => "No stone left unturned",
+        :type => "photo", 
+        :albums => [
+          { :id => '1', :name => 'one' }
+        ],
+        :owner_uid => "123456",
+        :owner_birdbox_nickname => "me",
+        :title => "",
+        :url => "http://www.example.com/bar.jpg",
+        :tags => %w(birdbox two),
+        :removed => false,
+        :height => 640,
+        :width => 480,
+        :created_at => Time.now.utc),
 
-      subject.new(:id => Digest::MD5.hexdigest(['facebook', '2', '3'].join(':')), 
+      subject.new(:id => Digest::MD5.hexdigest(['facebook', '3'].join(':')), 
         :provider => "facebook", :external_id => "3",
-        :title => "That looks delicious", :type => "photo", :album => '2',
-        :url => "http://www.example.com/baz.jpg", :tags => %w(birdbox three), :removed => false,
-        :height => 640, :width => 480, :created_at => Time.now.utc),
+        :title => "That looks delicious",
+        :type => "photo",
+        :albums => [
+          { :id => '2', :name => 'two' }
+        ],
+        :url => "http://www.example.com/baz.jpg",
+        :tags => %w(birdbox three),
+        :removed => false,
+        :height => 640,
+        :width => 480,
+        :created_at => Time.now.utc),
 
-      subject.new(:id => Digest::MD5.hexdigest(['facebook', '2', '4'].join(':')), 
+      subject.new(:id => Digest::MD5.hexdigest(['facebook', '4'].join(':')), 
         :provider => "facebook", :external_id => "4",
-        :title => "Tags good", :type => "photo", :url => "http://www.example.com/biz.jpg",
-        :tags => ['birdbox-tokenizer', 'three'], :removed => false, :album => '2',
-        :height => 640, :width => 480, :created_at => Time.now.utc),
+        :title => "Tags good",
+        :type => "photo",
+        :url => "http://www.example.com/biz.jpg",
+        :tags => ['birdbox-tokenizer', 'three'],
+        :removed => false,
+        :albums => [
+          { :id => '2', :name => 'two' }
+        ],
+        :height => 640,
+        :width => 480,
+        :created_at => Time.now.utc),
     ]
     subject.index.import(@items)
     subject.index.refresh
@@ -64,15 +100,15 @@ describe Birdbox::Search::Resource do
   end
 
   it "must be retrievable by id" do
-    id = Digest::MD5.hexdigest(['facebook', '1', '1'].join(':'))
+    id = Digest::MD5.hexdigest(['facebook', '1'].join(':'))
     r = subject.find(id)
     r.url.must_equal(@items.first.url) 
   end
 
   it "must be able to retrieve multiple ids" do
     ids = [
-      Digest::MD5.hexdigest(['facebook', '1', '1'].join(':')),
-      Digest::MD5.hexdigest(['facebook', '1', '2'].join(':'))
+      Digest::MD5.hexdigest(['facebook', '1'].join(':')),
+      Digest::MD5.hexdigest(['facebook', '2'].join(':'))
     ]
     r = subject.find(ids)
     r.size.must_equal(2)
@@ -127,7 +163,7 @@ describe Birdbox::Search::Resource do
   end
 
   it "must not update existing records when using the 'persist' method" do
-    id = Digest::MD5.hexdigest(['facebook', '1', '1'].join(':'))
+    id = Digest::MD5.hexdigest(['facebook', '1'].join(':'))
     r = subject.find(id)
     r.title = 'booya!'
     r.save.updated?.must_equal(false)
@@ -135,7 +171,7 @@ describe Birdbox::Search::Resource do
   end
 
   it "must update existing records if the tags have changed" do
-    id = Digest::MD5.hexdigest(['facebook', '1', '1'].join(':'))
+    id = Digest::MD5.hexdigest(['facebook', '1'].join(':'))
     r = subject.find(id)
     r.title = 'booya!'
     r.tags << "danger"

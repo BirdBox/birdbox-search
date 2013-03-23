@@ -27,7 +27,13 @@ module Birdbox
           property :source_uid,             :type => 'string',  :index => 'not_analyzed'
           property :source_avatar,          :type => 'string',  :index => 'not_analyzed'
           property :source_nickname,        :type => 'string',  :index => 'not_analyzed'
-          property :album,                  :type => 'string',  :index => 'not_analyzed'
+
+          property :albums,                 :type => 'object',
+            :properties => {
+              :id => {:type => "string", :index => :not_analyzed },
+              :name => { :type => "string", :index => :not_analyzed }
+            }
+
           property :title,                  :type => 'string',  :index => 'analyzed',     :analyzer => 'standard'
           property :url,                    :type => 'string',  :index => 'not_analyzed'
           property :type,                   :type => 'string',  :index => 'not_analyzed'
@@ -73,7 +79,7 @@ module Birdbox
       # migigate the impact on search performance.
       before_save do
         @_updated = false
-        self.id = Digest::MD5.hexdigest([self.provider, self.album, self.external_id].join(':'))
+        self.id = Digest::MD5.hexdigest([self.provider, self.external_id].join(':'))
 
         self.created_at = (self.created_at || Time.now).utc
         self.updated_at = Time.now.utc
@@ -90,7 +96,7 @@ module Birdbox
         # be aborted.
         (resource.tags and resource.tags != self.tags) or
           (resource.people and resource.people != self.people) or
-          (resource.album != self.album) or
+          (resource.albums and resource.albums != self.albums) or
           (resource.removed != self.removed)
       end
 

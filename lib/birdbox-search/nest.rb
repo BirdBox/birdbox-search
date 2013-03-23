@@ -24,7 +24,7 @@ module Birdbox
             else
               filter[:and] = [
                 {:term => {:provider => 'facebook'}},
-                {:terms => {:album => albums}},
+                {:terms => {'albums.id' => albums}},
               ] 
             end
           when "instagram"

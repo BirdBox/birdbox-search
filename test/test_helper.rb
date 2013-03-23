@@ -6,7 +6,7 @@ require File.expand_path('../../lib/birdbox-search.rb', __FILE__)
 module Fixtures
   def self.resources
     [
-      Resource.new(:id => Digest::MD5.hexdigest('facebook:1:1'),
+      Resource.new(:id => Digest::MD5.hexdigest('facebook:1'),
         :provider => "facebook",
         :external_id => "1",
         :owner_uid => "100001",
@@ -16,7 +16,9 @@ module Fixtures
         :description => "A purple sunset off the coast of Isla Vista, CA",
         :url => "http://www.example.com/isla_vista.jpg",
         :tags => [ ],
-        :album => '1',
+        :albums => [
+          { :id => '1', :name => 'one' }
+        ],
         :people => [
           { :id => '22', :name => 'Rickey Henderson' },
           { :id => '34', :name => 'Dave Steward' }
@@ -29,7 +31,7 @@ module Fixtures
         :uploaded_at => Time.parse("2013-01-01 00:02:14"), 
         :taken_at => Time.parse("2013-01-01 00:02:14")),
 
-      Resource.new(:id => Digest::MD5.hexdigest('facebook:1:2'),
+      Resource.new(:id => Digest::MD5.hexdigest('facebook:2'),
         :provider => "facebook",
         :external_id => "2",
         :owner_uid => "100001",
@@ -43,7 +45,9 @@ module Fixtures
           { :id => '22', :name => 'Rickey Henderson' },
           { :id => '42', :name => 'Dave Henderson' }
         ],
-        :album => '1',
+        :albums => [
+          { :id => '1', :name => 'one' }
+        ],
         :height => 640, :width => 480,
         :removed => false,
         :created_at => Time.parse("2013-01-18 15:26:42"),
@@ -51,7 +55,7 @@ module Fixtures
         :uploaded_at => Time.parse("2013-01-18 15:26:42"), 
         :taken_at => Time.parse("2013-01-18 15:26:42")),
 
-      Resource.new(:id => Digest::MD5.hexdigest('facebook:2:3'),
+      Resource.new(:id => Digest::MD5.hexdigest('facebook:3'),
         :provider => "facebook",
         :external_id => "3",
         :owner_uid => "100002", 
@@ -61,7 +65,9 @@ module Fixtures
         :description => "Enjoying a long hike in Bidwell Park.",
         :url => "http://www.example.com/bidwell.jpg",
         :tags => [ ],
-        :album => '2',
+        :albums => [
+          { :id => '2', :name => 'two' }
+        ],
         :people => [
           { :id => '22', :name => 'Rickey Henderson' },
           { :id => '43', :name => 'Dennis Eckersley' }
@@ -74,7 +80,7 @@ module Fixtures
         :uploaded_at => Time.parse("2013-01-10 22:34:07"), 
         :taken_at => Time.parse("2013-01-10 22:34:07")),
 
-      Resource.new(:id => Digest::MD5.hexdigest('facebook:2:4'),
+      Resource.new(:id => Digest::MD5.hexdigest('facebook:4'),
         :provider => "facebook",
         :external_id => "4",
         :owner_uid => "100001", 
@@ -84,7 +90,9 @@ module Fixtures
         :description => "Damn, that's a lot of trees.",
         :url => "http://www.example.com/arcata.jpg",
         :tags => [ ],
-        :album => '2',
+        :albums => [
+          { :id => '2', :name => 'two' }
+        ],
         :people => [
           { :id => '42', :name => 'Dave Henderson' }
         ],
@@ -96,7 +104,7 @@ module Fixtures
         :uploaded_at => Time.parse("2013-02-02 12:54:15"), 
         :taken_at => Time.parse("2013-02-02 12:54:15")),
 
-      Resource.new(:id => Digest::MD5.hexdigest('instagram::1'),
+      Resource.new(:id => Digest::MD5.hexdigest('instagram:1'),
         :provider => "instagram",
         :external_id => "1",
         :owner_uid => "200001",
@@ -114,7 +122,7 @@ module Fixtures
         :uploaded_at => Time.parse("2013-01-02 13:04:11"), 
         :taken_at => Time.parse("2013-01-02 13:04:11")),
 
-      Resource.new(:id => Digest::MD5.hexdigest('instagram::2'),
+      Resource.new(:id => Digest::MD5.hexdigest('instagram:2'),
         :provider => "instagram",
         :external_id => "2",
         :owner_uid => "200002",
@@ -132,7 +140,7 @@ module Fixtures
         :uploaded_at => Time.parse("2012-12-05 9:23:56"), 
         :taken_at => Time.parse("2012-12-05 9:23:56")),
 
-      Resource.new(:id => Digest::MD5.hexdigest('instagram::3'),
+      Resource.new(:id => Digest::MD5.hexdigest('instagram:3'),
         :provider => "instagram",
         :external_id => "3",
         :owner_uid => "200002",
@@ -150,7 +158,7 @@ module Fixtures
         :uploaded_at => Time.parse("2012-11-15 16:12:41"), 
         :taken_at => Time.parse("2012-11-15 16:12:41")),
 
-      Resource.new(:id => Digest::MD5.hexdigest('instagram::4'),
+      Resource.new(:id => Digest::MD5.hexdigest('instagram:4'),
         :provider => "instagram",
         :external_id => "4",
         :owner_uid => "200002",
