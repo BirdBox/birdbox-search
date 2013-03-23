@@ -158,6 +158,7 @@ module Birdbox
         @_updated = false
         self.tags = []
         self.people = []
+        self.albums = []
         self.removed = false
         super(params)
       end
