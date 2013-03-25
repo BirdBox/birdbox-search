@@ -108,28 +108,6 @@ module Birdbox
           })
         end
 
-        # The external_id of a resource can be used to resolve pagination conflicts when 
-        # several resources have the same uploaded_at timestamp.
-        if opts[:external_id]
-          # from_external_id = opts[:external_id]
-          # to_external_id  = 0
-          # if opt[:sort_direction].eql? 'asc' # if paging the other direction then flip the secondary sort as well 
-            # from_external_id = opts[:external_id]
-            # to_external_id  = nil # unbounded
-          # end
-          
-          # unbounded range query (sort order sets the boundaries and direction)
-          filters.push({
-            :range => {
-              :external_id => {
-                :from => opts[:external_id],
-                :include_lower => false,
-                :include_upper => true
-              }
-            }
-          })
-        end 
-
         # Check if there are any resources that should be excluded.  If so, the query will need to
         # be modified to NOT include the items on the list.
         unless (opts[:exclude].empty?)
@@ -184,7 +162,6 @@ module Birdbox
           :since          => nil,           # default to the beginning of time
           :until          => nil,           # default to the end of time
           :exclude        => [ ],           # excluded resource ids
-          :external_id    => nil            # used to resolve conflicts when uploaded_at is not unique
         }.merge(options)
 
         # if no query parameters go away
@@ -192,13 +169,8 @@ module Birdbox
           return []
         end
         
-        # NEED this so if we have multiple resources (>= page size) w/ the same uploaded_at timestamp we can get the next batch
-        # if opts[:external_id]
-          # q = "(#{q}) AND (external_id:[0 TO #{opts[:external_id]}])"
-        # end
-
         # Select the options needed to build the query filter into their own hash.
-        filter_options = opts.select{ |k,v| [:since, :until, :exclude, :external_id].include?(k) }
+        filter_options = opts.select{ |k,v| [:since, :until, :exclude].include?(k) }
         
         query = {
           :query => {
@@ -207,16 +179,13 @@ module Birdbox
               :filter => self.build_query_filter(sources, filter_options)
             }
           },
-          :sort => [
-            { :external_id => opts[:sort_direction] }
-          ],
           :from => opts[:page_size].to_i * (opts[:page].to_i - 1),
           :size => opts[:page_size].to_i 
         }
 
-        # Add the custom search parameter if one was provided.
+        # Add the sort parameter if one was provided.
         if opts[:sort_by]
-          query[:sort].insert(0, {opts[:sort_by] => opts[:sort_direction]}) 
+          query[:sort] = {opts[:sort_by] => opts[:sort_direction]} 
         end
 
         search = Tire.search 'resources', query
