@@ -199,6 +199,28 @@ describe Birdbox::Search::Resource do
     r.size.must_equal(@items.count { |x| x.people.include?("facebook:123123")})
   end
   
+  it "must be able to report new album count" do
+    new_resource = subject.new(:id => Digest::MD5.hexdigest(['facebook', '1'].join(':')), 
+      :provider => "facebook", 
+      :external_id => "1234-44",
+      :owner_uid => "123456",
+      :owner_birdbox_nickname => "me", 
+      :albums => [
+        { :id => '44-44', :name => 'new' }
+      ],
+      :title => "Purple #hashtag1 #hashtag2 sunset",
+      :type => "photo",
+      :description => "A purple sunset #hashtag1 off the coast of Isla Vista, CA",
+      :url => "http://www.example.com/foo.jpg",
+      :tags => %w(birdbox one),
+      :removed => false, 
+      :download_height => 640,
+      :download_width => 480,
+      :created_at => Time.now.utc)
+    new_resource.save
+    new_resource.new_albums.count.must_equal(1)
+  end
+  
   it "must be able to add and remove albums from a resource" do
     new_resource = subject.new(:id => Digest::MD5.hexdigest(['facebook', '1'].join(':')), 
       :provider => "facebook", 
@@ -218,6 +240,7 @@ describe Birdbox::Search::Resource do
       :download_width => 480,
       :created_at => Time.now.utc)
     new_resource.save
+    new_resource.new_albums.count.must_equal(1)
     r = subject.find(Digest::MD5.hexdigest(['facebook', '1'].join(':')))
     r.albums.count.must_equal(2)
     r.remove_albums = true
@@ -238,27 +261,4 @@ describe Birdbox::Search::Resource do
     r.removed.must_equal(false)
   end
 
-  # it "must be able to remove an album from a resource" do
-    # new_resource = subject.new(:id => Digest::MD5.hexdigest(['facebook', '1'].join(':')), 
-      # :provider => "facebook", 
-      # :external_id => "1",
-      # :owner_uid => "123456",
-      # :owner_birdbox_nickname => "me", 
-      # :albums => [
-        # { :id => '2', :name => 'two' }
-      # ],
-      # :title => "Purple #hashtag1 #hashtag2 sunset",
-      # :type => "photo",
-      # :description => "A purple sunset #hashtag1 off the coast of Isla Vista, CA",
-      # :url => "http://www.example.com/foo.jpg",
-      # :tags => %w(birdbox one),
-      # :removed => false, 
-      # :download_height => 640,
-      # :download_width => 480,
-      # :created_at => Time.now.utc)
-    # new_resource.save
-    # r = subject.find(Digest::MD5.hexdigest(['facebook', '1'].join(':')))
-    # r.albums.count.must_equal(2)
-  # end
-#   
 end

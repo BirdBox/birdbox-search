@@ -89,8 +89,10 @@ module Birdbox
         resource = Resource.find(@id)
 
         # If the resource does not exist yet, then save it.
-        return true unless resource
-        
+        unless resource
+          @new_albums = @albums # if a new resource then new albums are the albums. duh
+          return true 
+        end
         # Album hash keys get converted to string if symbols, so clean that up just in case
         stringify_album_keys
         
