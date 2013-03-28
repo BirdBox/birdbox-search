@@ -83,6 +83,14 @@ module Birdbox
 
         @created_at = (@created_at || Time.now).utc
         @updated_at = Time.now.utc
+        
+        # need milisecond granularity on uploaded_at timestamp, so ensure that is the case by converting to string in proper format
+        # there is probably a better way to do this, but it works
+        # ... support date/time types
+        if @uploaded_at and !@uploaded_at.is_a?(String)
+          @uploaded_at = @uploaded_at.utc.strftime("%FT%T.%LZ")
+        end
+        
         # Often the save() method is called for every resource that is discovered. Actually updating
         # the index that often is going to cause performance issues.  So, only update the resource
         # if certain properties have changed.

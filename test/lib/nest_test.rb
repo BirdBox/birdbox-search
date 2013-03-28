@@ -10,7 +10,6 @@ describe Birdbox::Search::Nest do
     #logger STDERR, :debug => true
   end
 
-
   before do
     Resource.index.delete
     Resource.create_elasticsearch_index
@@ -22,7 +21,13 @@ describe Birdbox::Search::Nest do
 
     Resource.index.import(Fixtures.resources)
     Resource.index.refresh
-
+  end
+  
+  it "should raise an Error for bad unitl param" do
+    sources = {
+      'facebook' => {'albums' => %w(1)}
+    }
+    proc { Nest.fetch(sources, :since => '1234') }.must_raise ArgumentError
   end
   
   it "must be able to fetch resources for a single facebook album" do
@@ -32,8 +37,7 @@ describe Birdbox::Search::Nest do
     results = Nest.fetch(sources)
     results.count.must_equal(2)
   end
-
-
+  
   it "must be able to fetch resources for multiple facebook albums" do
     sources = {
       'facebook' => {'albums' => %w(1 2)}
@@ -41,7 +45,6 @@ describe Birdbox::Search::Nest do
     results = Nest.fetch(sources)
     results.count.must_equal(4)
   end
-
 
   it "must be able to fetch resources for a single tag belonging to one instagram user" do
     sources = {
@@ -55,7 +58,6 @@ describe Birdbox::Search::Nest do
     results.count.must_equal(2)
   end
 
-
   it "must be able to fetch resources for multiple tags belonging to one instagram user" do
     sources = {
       'instagram' => {
@@ -67,7 +69,6 @@ describe Birdbox::Search::Nest do
     results = Nest.fetch(sources)
     results.count.must_equal(3)
   end
-
 
   it "must be able to fetch resources for multiple tags across multiple instagram users" do
     sources = {
@@ -81,7 +82,6 @@ describe Birdbox::Search::Nest do
     results = Nest.fetch(sources)
     results.count.must_equal(4)
   end
-
 
   it "must be able to fetch various resources from multiple services" do
     sources = {
@@ -98,8 +98,7 @@ describe Birdbox::Search::Nest do
     results = Nest.fetch(sources)
     results.count.must_equal(8)
   end
-
-
+  
   it "must be able to paginate over results" do
     sources = {
       'facebook' => {
@@ -117,8 +116,7 @@ describe Birdbox::Search::Nest do
     results = Nest.fetch(sources, :page => 2, :page_size => 5)
     results.count.must_equal(3)
   end
-
-
+  
   it "must be able to sort results" do
     sources = {
       'facebook' => {
@@ -136,7 +134,6 @@ describe Birdbox::Search::Nest do
     descending.to_a.must_equal(ascending.to_a.reverse)
   end
 
-
   it "must support time-bounded queries" do
     sources = {
       'facebook' => {
@@ -149,18 +146,17 @@ describe Birdbox::Search::Nest do
         }
       }
     }
-    results = Nest.fetch(sources, :until => Time.parse("2011-01-01 00:00:00").to_i)
+    results = Nest.fetch(sources, :until => Time.parse("2011-01-01 00:00:00"))
     results.count.must_equal(0)
-    results = Nest.fetch(sources, :since => Time.parse("2011-01-01 00:00:00").to_i)
+    results = Nest.fetch(sources, :since => Time.parse("2011-01-01 00:00:00"))
     results.count.must_equal(8)
-    results = Nest.fetch(sources, :since => Time.parse("2013-01-01 00:00:00").to_i)
+    results = Nest.fetch(sources, :since => Time.parse("2013-01-01 00:00:00"))
     results.count.must_equal(5)
-    results = Nest.fetch(sources, :until => Time.parse("2012-12-31 23:59:59").to_i)
+    results = Nest.fetch(sources, :until => Time.parse("2012-12-31 23:59:59"))
     results.count.must_equal(3)
-    results = Nest.fetch(sources, :since => Time.parse("2012-11-15 00:00:00").to_i, :until => Time.parse("2012-11-15 23:59:59").to_i)
+    results = Nest.fetch(sources, :since => Time.parse("2012-11-15 00:00:00"), :until => Time.parse("2012-11-15 23:59:59"))
     results.count.must_equal(2)
   end
-
 
   it "must be able to find all people tagged in the resources belonging to a nest" do
     sources = {
@@ -179,7 +175,6 @@ describe Birdbox::Search::Nest do
     people[0].first.must_equal('22')
     people[0].last.must_equal(3)
   end
-
 
   it "must be able to exclude resources by id" do
     sources = {
@@ -200,7 +195,6 @@ describe Birdbox::Search::Nest do
     results = Nest.fetch(sources, :exclude => exclude)
     results.count.must_equal(6)
   end
-
   
   it "must be able to fetch resources by ideez" do
     ids = [
@@ -221,5 +215,131 @@ describe Birdbox::Search::Nest do
     results = Nest.fetch_ids(ids)
     results.count.must_equal(3)
   end
+  
+  it "must be able to paginate duplicate updated at consistently" do
+    Resource.index.delete
+    Resource.create_elasticsearch_index
+    index_alias = Tire::Alias.new
+    index_alias.name('resources')
+    index_alias.index('resources_v1')
+    index_alias.save
+    # TODO @kcbigring
+    # Serialization of timestamp is losing miliseconds on import so figure out how to fix that
+    # Currently, import is NOT used in the app (only testing), so table
+    # Resource.index.import(Fixtures.ordered_resources)
+    Fixtures.ordered_resources.each do |r|
+      r.save
+    end
+    Resource.index.refresh
+    
+    sources = {
+      'facebook' => {
+        'albums' => %w(1)
+      },
+      'instagram' => {
+        'tags' => {
+          '200001' => %w(california)
+        }
+      }
+    }
+    results = Nest.fetch(sources, :page_size => 2)
+    results.count.must_equal(2)
+    results[0].external_id.must_equal('4')
+    results[0].provider.must_equal('instagram')
+    results[1].external_id.must_equal('3')
+    results[1].provider.must_equal('instagram')
+    
+    results = Nest.fetch(sources, :page_size => 2, :until => results[1].uploaded_at)
+    results.count.must_equal(2)
+    results[0].external_id.must_equal('2')
+    results[0].provider.must_equal('instagram')
+    results[1].external_id.must_equal('1')
+    results[1].provider.must_equal('instagram')
 
+    results = Nest.fetch(sources, :page_size => 2, :until => results[1].uploaded_at)
+    results.count.must_equal(2)
+    results[0].external_id.must_equal('4')
+    results[0].provider.must_equal('facebook')
+    results[1].external_id.must_equal('3')
+    results[1].provider.must_equal('facebook')
+    
+    # Reverse the sort order... weird use case but make sure it works
+    # In this case we will be unbounding the lower end so will get resources 0, 1, and 2
+    results = Nest.fetch(sources, :until => results[1].uploaded_at, :sort_direction => 'asc')
+    results.count.must_equal(3)
+    results[2].external_id.must_equal('2')
+    results[2].provider.must_equal('facebook')
+    results[1].external_id.must_equal('1')
+    results[1].provider.must_equal('facebook')
+    results[0].external_id.must_equal('0')
+    results[0].provider.must_equal('facebook')
+    
+    # Bound upper and lower
+    results = Nest.fetch(sources, :until => results[2].uploaded_at, :since => results[0].uploaded_at)
+    results.count.must_equal(1)
+    results[0].external_id.must_equal('1')
+    results[0].provider.must_equal('facebook')
+    
+    results = Nest.fetch(sources, :page_size => 2, :until => results[0].uploaded_at)
+    results.count.must_equal(1)
+    results[0].external_id.must_equal('0')
+    results[0].provider.must_equal('facebook')
+  end
+  
+  it "must be able to paginate duplicate updated at consistently asc" do
+    Resource.index.delete
+    Resource.create_elasticsearch_index
+    index_alias = Tire::Alias.new
+    index_alias.name('resources')
+    index_alias.index('resources_v1')
+    index_alias.save
+    Fixtures.ordered_resources.each do |r|
+      r.save
+    end
+    Resource.index.refresh
+    
+    sources = {
+      'facebook' => {
+        'albums' => %w(1)
+      },
+      'instagram' => {
+        'tags' => {
+          '200001' => %w(california)
+        }
+      }
+    }
+    results = Nest.fetch(sources, :page_size => 2, :sort_direction => 'asc')
+    results.count.must_equal(2)
+    results[0].external_id.must_equal('0')
+    results[0].provider.must_equal('facebook')
+    results[1].external_id.must_equal('1')
+    results[1].provider.must_equal('facebook')
+    
+    results = Nest.fetch(sources, :page_size => 2, :sort_direction => 'asc', :since => results[1].uploaded_at)
+    results.count.must_equal(2)
+    results[0].external_id.must_equal('2')
+    results[0].provider.must_equal('facebook')
+    results[1].external_id.must_equal('3')
+    results[1].provider.must_equal('facebook')
+
+    results = Nest.fetch(sources, :page_size => 2, :sort_direction => 'asc', :since => results[1].uploaded_at)
+    results.count.must_equal(2)
+    results[0].external_id.must_equal('4')
+    results[0].provider.must_equal('facebook')
+    results[1].external_id.must_equal('1')
+    results[1].provider.must_equal('instagram')
+
+    results = Nest.fetch(sources, :page_size => 2, :sort_direction => 'asc', :since => results[1].uploaded_at)
+    results.count.must_equal(2)
+    results[0].external_id.must_equal('2')
+    results[0].provider.must_equal('instagram')
+    results[1].external_id.must_equal('3')
+    results[1].provider.must_equal('instagram')
+
+    results = Nest.fetch(sources, :page_size => 2, :sort_direction => 'asc', :since => results[1].uploaded_at)
+    results.count.must_equal(1)
+    results[0].external_id.must_equal('4')
+    results[0].provider.must_equal('instagram')
+  end
+  
 end

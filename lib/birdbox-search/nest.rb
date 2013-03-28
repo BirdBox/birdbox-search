@@ -94,15 +94,13 @@ module Birdbox
         # Limit the query to a specific date range if the `since` and/or `until` parameter
         # have been specified.
         if opts[:since] or opts[:until]
-          from_date = Time.at(opts[:since].to_i).utc
-          until_date = opts[:until] ? Time.at(opts[:until].to_i).utc : Time.now.utc
           filters.push({
             :range => {
               :uploaded_at => {
-                :from => from_date.iso8601,
-                :to => until_date.iso8601,
-                :include_lower => false,
-                :include_upper => true
+                :from => opts[:since],
+                :to => opts[:until],
+                :include_lower => !opts[:since],
+                :include_upper => !opts[:until]
               }
             }
           })
@@ -169,6 +167,11 @@ module Birdbox
           return []
         end
         
+        # ensure since and until are valid date strings if supplied
+        # timestaps are ok too
+        Time.parse(opts[:until]) if (opts[:until] and opts[:until].is_a?(String))
+        Time.parse(opts[:since]) if (opts[:since] and opts[:since].is_a?(String))
+
         # Select the options needed to build the query filter into their own hash.
         filter_options = opts.select{ |k,v| [:since, :until, :exclude].include?(k) }
         
