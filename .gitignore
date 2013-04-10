@@ -1,6 +1,7 @@
 .DS_Store
 *.gem
 *.rbc
+.ruby-version
 .bundle
 .config
 .yardoc
@@ -8,6 +9,7 @@ Gemfile.lock
 InstalledFiles
 _yardoc
 coverage
+vendor/
 doc/
 lib/bundler/man
 pkg
