@@ -5,7 +5,7 @@ task :default => :test
 
 Rake::TestTask.new do |t|
   t.libs << "lib/birdbox-search"
-  t.test_files = FileList["test/lib/*_test.rb"]
+  t.test_files = FileList["test/lib/*.rb"]
   t.verbose = true
 end
 

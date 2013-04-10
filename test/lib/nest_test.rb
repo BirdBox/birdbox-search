@@ -19,7 +19,7 @@ describe Birdbox::Search::Nest do
     index_alias.index('resources_v1')
     index_alias.save
 
-    Resource.index.import(Fixtures.resources)
+    Fixtures.resources.each { |r| r.save }
     Resource.index.refresh
   end
   

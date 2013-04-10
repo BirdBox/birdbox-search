@@ -11,9 +11,9 @@ module Fixtures
         :external_id => "1",
         :owner_uid => "100001",
         :owner_birdbox_nickname => "alice", 
-        :title => "Purple sunset",
+        :title => "Purple #sunset",
         :type => "photo",
-        :description => "A purple sunset off the coast of Isla Vista, CA",
+        :description => "A purple sunset off the #coast of Isla Vista, CA",
         :url => "http://www.example.com/isla_vista.jpg",
         :tags => [ ],
         :albums => [
