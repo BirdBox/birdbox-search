@@ -2,7 +2,6 @@ require 'digest/md5'
 require_relative '../test_helper'
 
 describe Birdbox::Search::Resource do
-  Resource = Birdbox::Search::Resource
 
   Birdbox::Search.configure do
     url 'http://localhost:9200'

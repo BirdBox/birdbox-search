@@ -2,7 +2,6 @@ require 'time'
 require_relative '../test_helper'
 
 describe Birdbox::Search::Nest do
-  Resource = Birdbox::Search::Resource
   Nest = Birdbox::Search::Nest
 
   Birdbox::Search.configure do

@@ -2,6 +2,7 @@ require 'digest/md5'
 require 'minitest/autorun'
 require File.expand_path('../../lib/birdbox-search.rb', __FILE__)
 
+Resource = Birdbox::Search::Resource
 
 module Fixtures
   def self.resources
