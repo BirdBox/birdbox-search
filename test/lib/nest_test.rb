@@ -340,5 +340,22 @@ describe Birdbox::Search::Nest do
     results[0].external_id.must_equal('4')
     results[0].provider.must_equal('instagram')
   end
+
+
+  it "must be able to determine whether a resource belongs to a nest" do
+    sources = {
+      'facebook' => {
+        'albums' => %w(1 2)
+      },
+      'instagram' => {
+        'tags' => {
+          '200001' => %w(california),
+          '200002' => %w(california norcal)
+        }
+      }
+    }
+    Nest.include?(sources, Digest::MD5.hexdigest('facebook:1')).must_equal(true)
+    Nest.include?(sources, Digest::MD5.hexdigest('not really a resource')).must_equal(false)
+  end
   
 end
