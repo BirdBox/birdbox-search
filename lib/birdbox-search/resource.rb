@@ -32,8 +32,9 @@ module Birdbox
 
           property :albums,                 :type => 'object',
             :properties => {
-              :id => {:type => "string", :index => :not_analyzed },
-              :name => { :type => "string", :index => :not_analyzed }
+              :id =>          { :type => "string", :index => 'not_analyzed' },
+              :name =>        { :type => "string", :index => 'analyzed' },
+              :description => { :type => "string", :index => 'analyzed' }
             }
 
           property :title,                  :type => 'string',  :index => 'analyzed',     :analyzer => 'standard'
