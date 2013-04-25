@@ -159,7 +159,6 @@ module Birdbox
         end
       end
 
-
       # Looks up a user's existing tags and returns a unique list (including 
       # the number of times the tag was found, sorted alphabetically.
       #
@@ -195,6 +194,15 @@ module Birdbox
         hashtags += @description.to_s.downcase.scan(/\B#\w+/).uniq.each do |h|
           h.gsub!('#', '').strip!
         end
+        @albums.each do |album|
+          hashtags += album['name'].to_s.downcase.scan(/\B#\w+/).uniq.each do |h|
+            h.gsub!('#', '').strip!
+          end
+          hashtags += album['description'].to_s.downcase.scan(/\B#\w+/).uniq.each do |h|
+            h.gsub!('#', '').strip!
+          end
+        end
+
         if @tags
           @tags.concat hashtags.uniq
           @tags = @tags.uniq
