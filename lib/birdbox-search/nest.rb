@@ -20,14 +20,49 @@ module Birdbox
           filter = { }
           case provider.to_s.strip.downcase
             when "facebook"
+              # Facebook queries can be tag-based or album based.
+              items = [ ]
+              tags = data.fetch('tags',[ ])
+
+              if tags.count == 1
+                items.push({:and => [
+                  {:term => {:provider => 'facebook'}},
+                  {:term => {:owner_uid => tags.keys.first}},
+                  {:terms => {:tags => tags.values.first}},
+                ]})
+              elsif tags.count > 1
+                  items.push({:and => [
+                  {:term => {:provider => 'facebook'}},
+                  {
+                    :or => tags.inject([ ]) do |memo, (owner,tags)|
+                      memo.push({
+                        :and => [
+                          {:term => {:owner_uid => owner}},
+                          {:terms => {:tags => tags}}
+                        ]
+                      })
+                      memo
+                    end
+                  }
+                ]}) 
+              end
+
               albums = data.fetch('albums', [ ])
-              if albums.empty?
-                raise ArgumentError.new 'Query must specify at least one facebook album.'
-              else
-                filter[:and] = [
+              unless albums.empty?
+                items.push({:and => [
                   {:term => {:provider => 'facebook'}},
                   {:terms => {'albums.id' => albums}},
-                ] 
+                ]}) 
+              end
+
+          
+              if items.empty?
+                raise ArgumentError.new 'Query must specify at least one facebook album or tag.'
+              elsif items.count > 1
+                # If multiple query types are specified, join them with an OR.
+                filter[:or] = [items]
+              else
+                filter = items.first
               end
             when "instagram"
               tags = data.fetch('tags', { })
@@ -58,6 +93,7 @@ module Birdbox
             else
               raise ArgumentError.new("invalid provider (#{provider}")
           end
+
           filter
         end
 

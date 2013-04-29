@@ -24,7 +24,7 @@ describe Birdbox::Search::Resource do
 
   it "must parse hashtags" do
     r = Resource.first
-    r.parse_hashtags.sort.must_equal(%w(coast sunset).sort)
+    r.parse_hashtags.sort.must_equal(%w(california sunset).sort)
   end
 
 

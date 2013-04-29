@@ -36,10 +36,47 @@ describe Birdbox::Search::Nest do
     results = Nest.fetch(sources)
     results.count.must_equal(2)
   end
+
+  it "must be able to fetch resources for a single facebook tag" do
+    sources = {
+      'facebook' => {
+        'tags' => {
+          '100001' => %w(california),
+        }
+      }
+    }
+    results = Nest.fetch(sources)
+    results.count.must_equal(2)
+  end
   
   it "must be able to fetch resources for multiple facebook albums" do
     sources = {
       'facebook' => {'albums' => %w(1 2)}
+    }
+    results = Nest.fetch(sources)
+    results.count.must_equal(4)
+  end
+
+  it "must be able to fetch resources for multiple facebook albums" do
+    sources = {
+      'facebook' => {
+        'tags' => {
+          '100001' => %w(california cheeseburger),
+        }
+      }
+    }
+    results = Nest.fetch(sources)
+    results.count.must_equal(3)
+  end
+
+  it "must be able to fetch resources for multiple tags across facebook users" do
+    sources = {
+      'facebook' => {
+        'tags' => {
+          '100001' => %w(california cheeseburger),
+          '100002' => %w(chico),
+        }
+      }
     }
     results = Nest.fetch(sources)
     results.count.must_equal(4)

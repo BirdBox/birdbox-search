@@ -14,9 +14,9 @@ module Fixtures
         :owner_birdbox_nickname => "alice", 
         :title => "Purple #sunset",
         :type => "photo",
-        :description => "A purple sunset off the #coast of Isla Vista, CA",
+        :description => "A purple sunset off the #california coast",
         :url => "http://www.example.com/isla_vista.jpg",
-        :tags => [ ],
+        :tags => %w(california sunset),
         :albums => [
           { :id => '1', :name => 'one' }
         ],
@@ -39,9 +39,9 @@ module Fixtures
         :owner_birdbox_nickname => "alice",
         :title => "That looks delicious",
         :type => "photo", 
-        :description => "That's the best looking cheesebuger I've seen in quite a while",
+        :description => "That's the best looking #cheesebuger I've seen in quite a while",
         :url => "http://www.example.com/cheeseburger.jpg",
-        :tags => [ ],
+        :tags => %w(cheeseburger),
         :people => [
           { :id => '22', :name => 'Rickey Henderson' },
           { :id => '42', :name => 'Dave Henderson' }
@@ -63,11 +63,11 @@ module Fixtures
         :external_id => "3",
         :owner_uid => "100002", 
         :owner_birdbox_nickname => "bob", 
-        :title => "Bidwell Park",
+        :title => "Bidwell Park, #Chico",
         :type => "photo", 
         :description => "Enjoying a long hike in Bidwell Park.",
         :url => "http://www.example.com/bidwell.jpg",
-        :tags => [ ],
+        :tags => %w(chico),
         :albums => [
           { :id => '2', :name => 'two' }
         ],
@@ -89,11 +89,11 @@ module Fixtures
         :external_id => "4",
         :owner_uid => "100001", 
         :owner_birdbox_nickname => "alice", 
-        :title => "Redwoods in Arcata",
+        :title => "Redwoods in Arcata, #california",
         :type => "photo", 
         :description => "Damn, that's a lot of trees.",
         :url => "http://www.example.com/arcata.jpg",
-        :tags => [ ],
+        :tags => %w(california),
         :albums => [
           { :id => '2', :name => 'two' }
         ],
