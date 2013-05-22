@@ -21,7 +21,7 @@ module Birdbox
           # facebook supports albums
           if provider.to_s.strip.downcase.eql?("facebook")
             albums = data.fetch('albums', [ ])
-            if albums.empty?
+            if albums.empty? and data.fetch('tags', { }).empty? # facebook may have tags
               raise ArgumentError.new 'Query must specify at least one facebook album.'
             else
               filter[:and] = [
@@ -34,7 +34,7 @@ module Birdbox
           if provider.to_s.strip.downcase.eql?("facebook") or provider.to_s.strip.downcase.eql?("instagram") or provider.to_s.strip.downcase.eql?("birdbox")
             tags = data.fetch('tags', { })
             if tags.empty?
-              raise ArgumentError.new 'Query must specify at least one instagram tag.'
+              raise ArgumentError.new "Query must specify at least one #{provider} tag."
             elsif tags.count == 1
               filter[:and] = [
                 {:term => {:provider => provider}},
