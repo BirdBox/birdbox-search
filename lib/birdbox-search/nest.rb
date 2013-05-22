@@ -18,48 +18,82 @@ module Birdbox
         #
         def build_provider_statement(provider, data)
           filter = { }
-          # facebook supports albums
-          if provider.to_s.strip.downcase.eql?("facebook")
-            albums = data.fetch('albums', [ ])
-            if albums.empty? and data.fetch('tags', { }).empty? # facebook may have tags
-              raise ArgumentError.new 'Query must specify at least one facebook album.'
+          case provider.to_s.strip.downcase
+            when "facebook"
+              # Facebook queries can be tag-based or album based.
+              items = [ ]
+              tags = data.fetch('tags',[ ])
+
+              if tags.count == 1
+                items.push({:and => [
+                  {:term => {:provider => 'facebook'}},
+                  {:term => {:owner_uid => tags.keys.first}},
+                  {:terms => {:tags => tags.values.first}},
+                ]})
+              elsif tags.count > 1
+                  items.push({:and => [
+                  {:term => {:provider => 'facebook'}},
+                  {
+                    :or => tags.inject([ ]) do |memo, (owner,tags)|
+                      memo.push({
+                        :and => [
+                          {:term => {:owner_uid => owner}},
+                          {:terms => {:tags => tags}}
+                        ]
+                      })
+                      memo
+                    end
+                  }
+                ]}) 
+              end
+
+              albums = data.fetch('albums', [ ])
+              unless albums.empty?
+                items.push({:and => [
+                  {:term => {:provider => 'facebook'}},
+                  {:terms => {'albums.id' => albums}},
+                ]}) 
+              end
+
+          
+              if items.empty?
+                raise ArgumentError.new 'Query must specify at least one facebook album or tag.'
+              elsif items.count > 1
+                # If multiple query types are specified, join them with an OR.
+                filter[:or] = [items]
+              else
+                filter = items.first
+              end
+            when ("instagram" or "birdbox")
+              tags = data.fetch('tags', { })
+              if tags.empty?
+                raise ArgumentError.new "Query must specify at least one #{provider} tag."
+              elsif tags.count == 1
+                filter[:and] = [
+                  {:term => {:provider => provider}},
+                  {:term => {:owner_uid => tags.keys.first}},
+                  {:terms => {:tags => tags.values.first}},
+                ]
+              else
+                 filter[:and] = [
+                  {:term => {:provider => provider}},
+                  {
+                    :or => tags.inject([ ]) do |memo, (owner,tags)|
+                      memo.push({
+                        :and => [
+                          {:term => {:owner_uid => owner}},
+                          {:terms => {:tags => tags}}
+                        ]
+                      })
+                      memo
+                    end
+                  }
+                ] 
+              end
             else
-              filter[:and] = [
-                {:term => {:provider => 'facebook'}},
-                {:terms => {'albums.id' => albums}},
-              ] 
-            end
+              raise ArgumentError.new("invalid provider (#{provider}")
           end
-          # facebook, instagram, and birdbox support tags
-          if provider.to_s.strip.downcase.eql?("facebook") or provider.to_s.strip.downcase.eql?("instagram") or provider.to_s.strip.downcase.eql?("birdbox")
-            tags = data.fetch('tags', { })
-            if tags.empty?
-              raise ArgumentError.new "Query must specify at least one #{provider} tag."
-            elsif tags.count == 1
-              filter[:and] = [
-                {:term => {:provider => provider}},
-                {:term => {:owner_uid => tags.keys.first}},
-                {:terms => {:tags => tags.values.first}},
-              ]
-            else
-               filter[:and] = [
-                {:term => {:provider => provider}},
-                {
-                  :or => tags.inject([ ]) do |memo, (owner,tags)|
-                    memo.push({
-                      :and => [
-                        {:term => {:owner_uid => owner}},
-                        {:terms => {:tags => tags}}
-                      ]
-                    })
-                    memo
-                  end
-                }
-              ] 
-            end
-          else
-            raise ArgumentError.new("invalid provider (#{provider}")
-          end
+
           filter
         end
 

@@ -23,7 +23,8 @@ describe Birdbox::Search::Resource do
   
 
   it "must parse hashtags" do
-    r = Resource.first
+    id = Digest::MD5.hexdigest(['facebook', '1'].join(':'))
+    r = Resource.find(id)
     r.parse_hashtags.sort.must_equal(%w(california sunset).sort)
   end
 
