@@ -129,6 +129,11 @@ describe Birdbox::Search::Nest do
           '200001' => %w(california),
           '200002' => %w(california norcal)
         }
+      },
+      'birdbox' => {
+        'tags' => {
+          '52' => %w(california)
+        }
       }
     }
     results = Nest.fetch(sources)

@@ -64,7 +64,7 @@ module Birdbox
               else
                 filter = items.first
               end
-            when ("instagram" or "birdbox")
+            when "instagram", "birdbox"
               tags = data.fetch('tags', { })
               if tags.empty?
                 raise ArgumentError.new "Query must specify at least one #{provider} tag."
