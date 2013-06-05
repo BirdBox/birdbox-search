@@ -82,6 +82,20 @@ describe Birdbox::Search::Nest do
     results.count.must_equal(4)
   end
 
+  it "must be able to use the count method to get the number of matches" do
+    sources = {
+      'facebook' => {
+        'tags' => {
+          '100001' => %w(california cheeseburger),
+          '100002' => %w(chico),
+        }
+      }
+    }
+    count = Nest.count(sources)
+    count.must_equal(4)
+  end
+
+
   it "must be able to fetch resources for a single tag belonging to one instagram user" do
     sources = {
       'instagram' => {

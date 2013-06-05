@@ -166,7 +166,7 @@ module Birdbox
 
         end
 
-
+        
         # Fetches all resources associated with a nest. A resource belongs to a
         # nest if its tag matches one or more of the nest's tags and is owned by
         # one of the nest's owners.
@@ -194,6 +194,43 @@ module Birdbox
         # @return [Tire::Results::Collection] an iterable collection of results
         #
         def fetch(sources, options = { })
+          query = build_query(sources, options)
+          search = Tire.search 'resources', query
+          search.results
+        end
+
+
+        # Gets the count of all resources matching a search query.
+        #
+        # @example
+        #   sources = {
+        #     'facebook' => {
+        #       'albums' => %w(132212 687261)
+        #     },
+        #     'instagram' => {
+        #       'tags' => {
+        #         '156832' => %w(springbreak),
+        #         '124560' => %w(cabo mexico) 
+        #       }
+        #     }
+        #   }
+        #   options = { :page => 1, :page_size => 25, :sort_by => 'uploaded_at', 
+        #     :exclude => ['facebook:432115', 'facebook:632613'] }
+        #   count = Birdbox::Search::Nest.count(sources, options)
+        # 
+        # @param [Hash] sources a hash containing one or more providers, each specifying
+        #   tags and/or albums.
+        # @param [Hash] options a hash of optional parameters.
+        # @return [Integer] the count of resources that matches the query.
+        #
+        def count(sources, options = { })
+          query = build_query(sources, options).merge({:search_type => 'count'})
+          search = Tire.search 'resources', query
+          search.results.total
+        end
+
+
+        def build_query(sources, options = { })
           opts = {
             :sort_by        => :uploaded_at,  # sort field
             :sort_direction => 'desc',        # sort direction            
@@ -206,7 +243,7 @@ module Birdbox
 
           # if no query parameters go away
           if sources.keys.count == 0
-            return []
+            return nil
           end
           
           # ensure since and until are valid date strings if supplied
@@ -232,12 +269,14 @@ module Birdbox
           if opts[:sort_by]
             query[:sort] = {opts[:sort_by] => opts[:sort_direction]} 
           end
-
-          search = Tire.search 'resources', query
-          search.results
+      
+          query
         end
 
-        
+
+
+
+
         # Checks if the resource with the provided id is a member of the nest matching
         # the sources.
         #
