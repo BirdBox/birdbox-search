@@ -110,7 +110,8 @@ describe Birdbox::Search::Resource do
     id = Digest::MD5.hexdigest(['facebook', '1'].join(':'))
     r = Resource.find(id)
     r.title = 'booya!'
-    r.save.updated?.must_equal(false)
+    r.save
+    r.updated?.must_equal(false)
     Resource.find(r.id).title.wont_equal(r.title)
   end
 
@@ -121,7 +122,8 @@ describe Birdbox::Search::Resource do
     r.title = 'booya!'
     r.tags << "danger"
     r.removed = true
-    r.save.updated?.must_equal(true)
+    r.save
+    r.updated?.must_equal(true)
     newr = Resource.find(r.id)
     newr.title.must_equal(r.title)
     newr.removed.must_equal(true)
