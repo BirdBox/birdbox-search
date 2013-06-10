@@ -37,6 +37,12 @@ describe Birdbox::Search::Nest do
     results.count.must_equal(2)
   end
 
+  it "must be able to fetch resources for an empty nest" do
+    sources = {}
+    results = Nest.fetch(sources)
+    results.count.must_equal(0)
+  end
+  
   it "must be able to fetch resources for a single facebook tag" do
     sources = {
       'facebook' => {

@@ -195,8 +195,12 @@ module Birdbox
         #
         def fetch(sources, options = { })
           query = build_query(sources, options)
-          search = Tire.search 'resources', query
-          search.results
+          if query
+            search = Tire.search 'resources', query
+            search.results
+          else
+            []
+          end
         end
 
 
@@ -225,8 +229,12 @@ module Birdbox
         #
         def count(sources, options = { })
           query = build_query(sources, options).merge({:search_type => 'count'})
-          search = Tire.search 'resources', query
-          search.results.total
+          if query
+            search = Tire.search 'resources', query
+            search.results.total
+          else
+            []
+          end
         end
 
 
