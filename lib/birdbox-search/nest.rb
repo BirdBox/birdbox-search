@@ -228,8 +228,9 @@ module Birdbox
         # @return [Integer] the count of resources that matches the query.
         #
         def count(sources, options = { })
-          query = build_query(sources, options).merge({:search_type => 'count'})
+          query = build_query(sources, options)
           if query
+            query = query.merge({:search_type => 'count'})
             search = Tire.search 'resources', query
             search.results.total
           else
