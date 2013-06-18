@@ -3,6 +3,7 @@
 An abstraction of the Elasticsearch API powering Birdbox Search.
 
 ## Installation
+### Does not work on linux
 
 First, you need a running _Elasticsearch_ server. Thankfully, it's easy. Let's define easy:
 
