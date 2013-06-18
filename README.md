@@ -3,13 +3,13 @@
 An abstraction of the Elasticsearch API powering Birdbox Search.
 
 ## Installation
-### Does not work on linux
 
 First, you need a running _Elasticsearch_ server. Thankfully, it's easy. Let's define easy:
 
-    $ curl -k -L -o elasticsearch-0.20.2.tar.gz http://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-0.20.2.tar.gz
-    $ tar -zxvf elasticsearch-0.20.2.tar.gz
-    $ ./elasticsearch-0.20.2/bin/elasticsearch -f
+    $ wget https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-0.90.0.deb
+    $ sudo dpkg -i elasticsearch-0.90.0.deb
+    $ sudo service elasticsearch start
+Make sure that you update the elasticsearch-0.90.0.deb to the most recent version. Also, if you're using redhat, use alien to convert it.
 
 On a Mac, you can also use _Homebrew_:
 
