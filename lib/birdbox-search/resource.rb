@@ -186,22 +186,21 @@ module Birdbox
         @new_albums = []
         super(params)
       end
+      
+      def extract_hashtags(text)
+        hashtags = text.to_s.downcase.scan(/\B#\w+/).uniq.each do |h|
+          h.gsub!('#', '').strip!
+        end
+        hashtags
+      end
 
       # Parses hashtags from the resource's title and description attribute.
       def parse_hashtags
-        hashtags = @title.to_s.downcase.scan(/\B#\w+/).uniq.each do |h|
-          h.gsub!('#', '').strip!
-        end
-        hashtags += @description.to_s.downcase.scan(/\B#\w+/).uniq.each do |h|
-          h.gsub!('#', '').strip!
-        end
+        hashtags = extract_hashtags(@title)
+        hashtags += extract_hashtags(@description)
         @albums.each do |album|
-          hashtags += album['name'].to_s.downcase.scan(/\B#\w+/).uniq.each do |h|
-            h.gsub!('#', '').strip!
-          end
-          hashtags += album['description'].to_s.downcase.scan(/\B#\w+/).uniq.each do |h|
-            h.gsub!('#', '').strip!
-          end
+          hashtags += extract_hashtags(album['name'])
+          hashtags += extract_hashtags(album['description'])
         end
 
         if @tags
