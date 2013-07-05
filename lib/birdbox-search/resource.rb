@@ -188,6 +188,10 @@ module Birdbox
       end
       
       def extract_hashtags(text)
+        Resource.extract_hashtags(text)
+      end
+      
+      def self.extract_hashtags(text)
         hashtags = text.to_s.downcase.scan(/\B#\w+/).uniq.each do |h|
           h.gsub!('#', '').strip!
         end
