@@ -160,6 +160,44 @@ module Birdbox
         end
       end
 
+
+      # Queries the search index using the provided terms.
+      # 
+      # @example
+      #  Resource.query(owner_uid => 54321012, :service_id => [1, 2]) 
+      #
+      # @param [Hash] a dictionary of terms
+      # @return [Tire::Results::Collection] an iterable collection of results
+      #
+      def self.query(terms={ })
+        return nil if terms.empty?
+
+        filter = terms.inject([ ]) { |memo,(k,v)|
+          if v.is_a?(Array)
+            memo.push({:terms => {k => v}}) 
+          else
+            memo.push({:term => {k => v}}) 
+          end
+          memo
+        }
+
+        if filter.count == 1
+          filter = filter.first
+        else
+          filter = {:and => filter}
+        end
+  
+        Tire.search('resources', {
+          :query => {
+            :filtered => {
+              :query => {:match_all => { }},
+              :filter => filter
+            }
+          }
+        }).results
+      end
+
+
       # Looks up a user's existing tags and returns a unique list (including 
       # the number of times the tag was found, sorted alphabetically.
       #
@@ -175,6 +213,7 @@ module Birdbox
         end
       end
 
+
       # Default constructor
       def initialize(params={})
         @_updated = false
@@ -187,16 +226,19 @@ module Birdbox
         super(params)
       end
       
+
       def extract_hashtags(text)
         Resource.extract_hashtags(text)
       end
       
+
       def self.extract_hashtags(text)
         hashtags = text.to_s.downcase.scan(/\B#\w+/).uniq.each do |h|
           h.gsub!('#', '').strip!
         end
         hashtags
       end
+
 
       # Parses hashtags from the resource's title and description attribute.
       def parse_hashtags
@@ -215,11 +257,13 @@ module Birdbox
         end
       end
 
+
       # A flag that is set when the resource is updated. 
       def updated?
         return @_updated
       end
       
+
       private
       
       def stringify_album_keys

@@ -215,4 +215,14 @@ describe Birdbox::Search::Resource do
     r.removed.must_equal(false)
   end
 
+
+  it "must be able to query the index by a list of provided terms" do
+    resultset = Resource.query(:provider => 'facebook', :owner_uid => '100001')
+    resultset.count.must_equal(3)
+    resultset.each { |r|
+      r['provider'].must_equal('facebook')
+      r['owner_uid'].must_equal('100001')
+    }
+  end
+
 end
