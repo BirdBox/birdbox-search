@@ -90,6 +90,32 @@ module Birdbox
                   }
                 ] 
               end
+            when "ios_upload"
+              nests = data.fetch('nests', { })
+              if nests.empty?
+                raise ArgumentError.new "Query must specify at least one #{provider} nest id."
+              elsif nests.count == 1
+                filter[:and] = [
+                  {:term => {:provider => provider}},
+                  {:term => {:owner_uid => nests.keys.first}},
+                  {:terms => {:nests => nests.values.first}},
+                ]
+              else
+                 filter[:and] = [
+                  {:term => {:provider => provider}},
+                  {
+                    :or => nests.inject([ ]) do |memo, (owner, nests)|
+                      memo.push({
+                        :and => [
+                          {:term => {:owner_uid => owner}},
+                          {:terms => {:nests => nests}}
+                        ]
+                      })
+                      memo
+                    end
+                  }
+                ] 
+              end
             else
               raise ArgumentError.new("invalid provider (#{provider}")
           end

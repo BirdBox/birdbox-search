@@ -420,4 +420,29 @@ describe Birdbox::Search::Nest do
     Nest.include?(sources, Digest::MD5.hexdigest('not really a resource')).must_equal(false)
   end
   
+  it "must be able to fetch resources for a single nest belonging to one ios user" do
+    sources = {
+      'ios_upload' => {
+        'nests' => {
+          '100001' => [1],
+        }
+      }
+    }
+    results = Nest.fetch(sources)
+    results.count.must_equal(1)
+  end
+
+  it "must be able to fetch resources for a single nest across multiple ios users" do
+    sources = {
+      'ios_upload' => {
+        'nests' => {
+          '100001' => [1],
+          '100002' => [1],
+        }
+      }
+    }
+    results = Nest.fetch(sources)
+    results.count.must_equal(2)
+  end
+  
 end

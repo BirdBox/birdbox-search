@@ -41,6 +41,7 @@ module Birdbox
           property :url,                    :type => 'string',  :index => 'not_analyzed'
           property :type,                   :type => 'string',  :index => 'not_analyzed'
           property :tags,                   :type => 'string',  :index => 'not_analyzed', :default => [ ]
+          property :nests,                  :type => 'integer',  :index => 'not_analyzed', :default => [ ]
 
           property :people,                  :type => 'object',
             :properties => {
@@ -120,6 +121,7 @@ module Birdbox
         # index.  If the following expression returns `false`, the save operation will
         # be aborted.
         (resource.tags and resource.tags != @tags) or
+          (resource.nests and resource.nests != @nests) or
           (resource.people and resource.people != @people) or
           (resource.albums != @albums) or
           (resource.removed != @removed)
@@ -197,27 +199,11 @@ module Birdbox
         }).results
       end
 
-
-      # Looks up a user's existing tags and returns a unique list (including 
-      # the number of times the tag was found, sorted alphabetically.
-      #
-      # @param [String] uid the user's id
-      # @return [Array] a list of tags and the associated count
-      #
-      def self.find_unique_user_tags(uid)
-        Resource.search {
-          query { string "owner_uid:#{uid}" }
-          facet('tags') { terms :tags, order: 'term' }
-        }.facets['tags']['terms'].map do |f|
-          [f['term'], f['count']]
-        end
-      end
-
-
       # Default constructor
       def initialize(params={})
         @_updated = false
         @tags = []
+        @nests = []
         @people = []
         @albums = []
         @removed = false
