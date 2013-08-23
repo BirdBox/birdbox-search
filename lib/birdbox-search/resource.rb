@@ -74,6 +74,10 @@ module Birdbox
 
       # Create the mappings to the ElasticSearch index.
       self.create_mappings
+      
+      def self.generate_id(provider, external_id)
+        Digest::MD5.hexdigest([provider, external_id].join(':'))
+      end
 
       # Only saves a resource if it does not already exist or if its tags or people tagged
       # have been modified. Updating a search index is an expensive operation and
@@ -81,7 +85,7 @@ module Birdbox
       # migigate the impact on search performance.
       before_save do
         @_updated = false
-        @id = Digest::MD5.hexdigest([@provider, @external_id].join(':'))
+        @id = Resource.generate_id(@provider, @external_id)
 
         @created_at = (@created_at || Time.now).utc
         @updated_at = Time.now.utc
