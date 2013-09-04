@@ -64,7 +64,7 @@ module Birdbox
               else
                 filter = items.first
               end
-            when "instagram", "birdbox", "email_upload", "text_upload", "BirdboxAuthentication"
+            when "instagram", "birdbox", "email_upload", "text_upload"
               tags = data.fetch('tags', { })
               if tags.empty?
                 raise ArgumentError.new "Query must specify at least one #{provider} tag."
@@ -90,7 +90,7 @@ module Birdbox
                   }
                 ] 
               end
-            when "ios_upload"
+            when "ios_upload", "IosService"
               nests = data.fetch('nests', { })
               if nests.empty?
                 raise ArgumentError.new "Query must specify at least one #{provider} nest id."
