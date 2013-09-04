@@ -18,7 +18,7 @@ module Birdbox
         #
         def build_provider_statement(provider, data)
           filter = { }
-          case provider.to_s.strip.downcase
+          case provider.to_s.strip.underscore.downcase
             when "facebook"
               # Facebook queries can be tag-based or album based.
               items = [ ]
@@ -90,7 +90,7 @@ module Birdbox
                   }
                 ] 
               end
-            when "ios_upload", "IosService"
+            when "ios_upload", "ios_service"
               nests = data.fetch('nests', { })
               if nests.empty?
                 raise ArgumentError.new "Query must specify at least one #{provider} nest id."
