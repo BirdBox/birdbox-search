@@ -125,6 +125,7 @@ module Birdbox
         
         # just concat the new nest(s) to any existing
         @nests.concat resource.nests
+        @nests.uniq!
         
         # Otherwise check specific resource attributes to decide whether to update the
         # index.  If the following expression returns `false`, the save operation will
