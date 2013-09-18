@@ -7,6 +7,7 @@ module Birdbox
     # mappings are only applied when calling Resource.create_elasticsearch_index.
     # Using Resource.index.create will create a generic index with no mappings.
     class Resource
+      attr_accessor :nest_id
       attr_accessor :remove_albums
       attr_accessor :new_albums
       include Tire::Model::Persistence
@@ -86,6 +87,7 @@ module Birdbox
       before_save do
         @_updated = false
         @id = Resource.generate_id(@provider, @external_id)
+        @nest_id = @nests.first # always the nest this resource is being added to
 
         @created_at = (@created_at || Time.now).utc
         @updated_at = Time.now.utc
@@ -120,6 +122,9 @@ module Birdbox
           @albums = resource.albums + @new_albums
           @removed = false if @new_albums.count > 0 # if albums added back, mark resource not removed any longer
         end
+        
+        # just concat the new nest to any existing
+        @nests.concat resource.nests
         
         # Otherwise check specific resource attributes to decide whether to update the
         # index.  If the following expression returns `false`, the save operation will
@@ -163,7 +168,13 @@ module Birdbox
           facet('tags') { terms :tags, order: 'term' }
         }.facets['tags']['terms'].map do |f|
           [f['term'], f['count']]
-        end
+        end@tags = tags
+    @nests = nests
+    @people = []
+    @service_model = service_model
+    @filename = filename
+    @albums = []
+    @r
       end
 
 
