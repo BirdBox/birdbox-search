@@ -85,17 +85,19 @@ module Birdbox
       # since we are constantly rescanning resources, this method should help
       # migigate the impact on search performance.
       before_save do
-        @nest_ids = @nests
+        save = true
+        @nest_ids = @nests.dup
         @_updated = false
         @id = Resource.generate_id(@provider, @external_id)
-
-        @created_at = (@created_at || Time.now).utc
-        @updated_at = Time.now.utc
+        @created_at = @updated_at = Time.now.utc.strftime("%FT%T.%LZ")
         
-        # need milisecond granularity on uploaded_at timestamp, so ensure that is the case by converting to string in proper format
-        # there is probably a better way to do this, but it works
-        # ... support date/time types
-        if @uploaded_at and !@uploaded_at.is_a?(String)
+        @taken_at ||= Time.now
+        unless @taken_at.is_a?(String)
+          @taken_at = @taken_at.utc.strftime("%FT%T.%LZ")
+        end
+        
+        @uploaded_at ||= Time.now
+        unless @uploaded_at.is_a?(String)
           @uploaded_at = @uploaded_at.utc.strftime("%FT%T.%LZ")
         end
         
@@ -103,46 +105,46 @@ module Birdbox
         # the index that often is going to cause performance issues.  So, only update the resource
         # if certain properties have changed.
         resource = Resource.find(@id)
-
-        # If the resource does not exist yet, then save it.
-        unless resource
-          @new_albums = @albums # if a new resource then new albums are the albums. duh
-          return true 
+        
+        # If the resource does not exist yet, then save it, else update
+        if resource and resource.id
+          
+          # Album hash keys get converted to string if symbols, so clean that up just in case
+          stringify_album_keys
+          
+          # If new album coming in then save and also set member new album collection, so no need to maintain state on creation
+          # Also, keep in mind albums can be removed
+          if @remove_albums # remove the albums we are sending in (a little awkward but it works)
+            @albums = resource.albums - @albums
+            @removed = true if @albums.count == 0 # no more albums, so mark resource removed
+          else
+            @new_albums = @albums - ((resource.albums ? resource.albums : []) & @albums)
+            @albums = resource.albums + @new_albums
+            @removed = false if @new_albums.count > 0 # if albums added back, mark resource not removed any longer
+          end
+          
+          # just concat the new nest(s) to any existing and keep the 'old' relevant timestamps (updated_at will change)
+          @created_at = resource.created_at
+          @uploaded_at = resource.uploaded_at
+          @taken_at = resource.taken_at
+          
+          @nests.concat resource.nests
+          @nests.uniq!
+          
+          # Otherwise check specific resource attributes to decide whether to update the
+          # index.  If the following expression returns `false`, the save operation will
+          # be aborted.
+          save = (
+            resource.tags != @tags or
+            resource.nests != @nests or
+            resource.people != @people or
+            resource.albums != @albums or
+            resource.removed != @removed
+          )
         end
-        # Album hash keys get converted to string if symbols, so clean that up just in case
-        stringify_album_keys
-        
-        # If new album coming in then save and also set member new album collection, so no need to maintain state on creation
-        # Also, keep in mind albums can be removed
-        if @remove_albums # remove the albums we are sending in (a little awkward but it works)
-          @albums = resource.albums - @albums
-          @removed = true if @albums.count == 0 # no more albums, so mark resource removed
-        else
-          @new_albums = @albums - ((resource.albums ? resource.albums : []) & @albums)
-          @albums = resource.albums + @new_albums
-          @removed = false if @new_albums.count > 0 # if albums added back, mark resource not removed any longer
-        end
-        
-        # just concat the new nest(s) to any existing
-        @nests.concat resource.nests
-        @nests.uniq!
-        
-        # Otherwise check specific resource attributes to decide whether to update the
-        # index.  If the following expression returns `false`, the save operation will
-        # be aborted.
-        (resource.tags and resource.tags != @tags) or
-          (resource.nests and resource.nests != @nests) or
-          (resource.people and resource.people != @people) or
-          (resource.albums != @albums) or
-          (resource.removed != @removed)
+        @_updated = save
+        save
       end
-
-      # Set the @_updated flag to signal that the save operation caused
-      # the index to be updated.
-      after_save do
-        @_updated = true
-      end
-
 
       def self.inherited(subclass)
         #index_prefix ""

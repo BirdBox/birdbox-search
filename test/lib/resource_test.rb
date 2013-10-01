@@ -21,6 +21,17 @@ describe Birdbox::Search::Resource do
     Resource.index.refresh
   end
   
+  it "must update existing records if the nests have changed" do
+    id = Digest::MD5.hexdigest(['ios_upload', '1'].join(':'))
+    r = Resource.find(id)
+    r.nests << 2
+    r.save
+    r.updated?.must_equal(true)
+    newr = Resource.find(r.id)
+    newr.created_at.to_i.must_equal(r.created_at.to_i)
+    newr.title.must_equal(r.title)
+  end
+  
 
   it "must parse hashtags" do
     id = Digest::MD5.hexdigest(['facebook', '1'].join(':'))
@@ -150,30 +161,6 @@ describe Birdbox::Search::Resource do
       end
      )
   end
-
-  
-  it "must be able to report new album count" do
-    new_resource = Resource.new(:id => Digest::MD5.hexdigest(['facebook', '1'].join(':')), 
-      :provider => "facebook", 
-      :external_id => "1234-44",
-      :owner_uid => "123456",
-      :owner_birdbox_nickname => "me", 
-      :albums => [
-        { :id => '44-44', :name => 'new' }
-      ],
-      :title => "Purple #hashtag1 #hashtag2 sunset",
-      :type => "photo",
-      :description => "A purple sunset #hashtag1 off the coast of Isla Vista, CA",
-      :url => "http://www.example.com/foo.jpg",
-      :tags => %w(birdbox one),
-      :removed => false, 
-      :download_height => 640,
-      :download_width => 480,
-      :created_at => Time.now.utc)
-    new_resource.save
-    new_resource.new_albums.count.must_equal(1)
-  end
-  
 
   it "must be able to add and remove albums from a resource" do
     new_resource = Resource.new(:id => Digest::MD5.hexdigest(['facebook', '1'].join(':')), 
