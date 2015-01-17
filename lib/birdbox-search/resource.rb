@@ -24,6 +24,7 @@ module Birdbox
           property :service,                :type => 'string',  :index => 'not_analyzed'
           property :provider,               :type => 'string',  :index => 'not_analyzed'
           property :external_id,            :type => 'string',  :index => 'not_analyzed'
+          property :action_session_id,      :type => 'string',  :index => 'not_analyzed'
           property :owner_uid,              :type => 'string',  :index => 'not_analyzed'
           property :owner_birdbox_nickname, :type => 'string',  :index => 'not_analyzed'
           property :owner_avatar,           :type => 'string',  :index => 'not_analyzed'
