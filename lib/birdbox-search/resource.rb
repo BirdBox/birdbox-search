@@ -28,9 +28,7 @@ module Birdbox
           property :owner_uid,              :type => 'string',  :index => 'not_analyzed'
           property :owner_birdbox_name,     :type => 'string',  :index => 'not_analyzed'
           property :owner_birdbox_nickname, :type => 'string',  :index => 'not_analyzed'
-          property :owner_avatar,           :type => 'string',  :index => 'not_analyzed'
           property :source_uid,             :type => 'string',  :index => 'not_analyzed'
-          property :source_avatar,          :type => 'string',  :index => 'not_analyzed'
           property :source_nickname,        :type => 'string',  :index => 'not_analyzed'
 
           property :albums,                 :type => 'object',
