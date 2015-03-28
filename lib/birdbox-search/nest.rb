@@ -222,8 +222,7 @@ module Birdbox
         def fetch(sources, options = { })
           query = build_query(sources, options)
           if query
-            search = Tire.search 'resources', query
-            search.results
+            Resource.search query
           else
             []
           end
@@ -256,9 +255,9 @@ module Birdbox
         def count(sources, options = { })
           query = build_query(sources, options)
           if query
-            query = query.merge({:search_type => 'count'})
-            search = Tire.search 'resources', query
-            search.results.total
+            #query = query.merge({:search_type => 'count'})
+            results = Resource.search(query).count
+            #results.count
           else
             []
           end
@@ -342,8 +341,8 @@ module Birdbox
               }
             }
           }
-          search = Tire.search 'resources', query
-          search.results.count > 0
+          results = Resource.count query
+          results.count > 0
         end
 
 
@@ -364,69 +363,7 @@ module Birdbox
             }
           }
           query[:query][:filtered][:filter] = {:terms => {:owner_uid => owner_uid}} if owner_uid
-          search = Tire.search Birdbox::Search::Resource.index_name, query
-          search.results
-        end
-
-
-        # Finds the ids of people that are tagged in the resources matching the
-        # provided owners and tags.
-        #
-        # @example
-        #   sources = {
-        #     'facebook' => {
-        #       'albums' => %w(132212),
-        #       'tags' => { 
-        #         '144251' => %w(kiddos vacation),
-        #         '235967' => %w(mexico)
-        #       }
-        #     },
-        #     'instagram' => {
-        #       'tags' => {
-        #         '156832' => %w(springbreak),
-        #         '124560' => %w(cabo) 
-        #       }
-        #     }
-        #   }
-        #   people = Birdbox::Search::Nest.find_tagged_people(sources, :size => 5)
-        #   people.each { |p| puts "#{p[0]} was tagged #{p[1]} times" }
-        # 
-        # @param [Hash] sources a hash containing one or more providers, each specifying
-        #   tags and/or albums.
-        # @return [Array] a list of user ids and the associated count
-        #
-        def find_tagged_people(sources, options={ })
-          opts = {
-            :page_size      => 10,            # number of items to return per page
-            :since          => nil,           # default to the beginning of time
-            :until          => nil,           # default to the end of time
-            :exclude        => [ ]            # excluded resource ids
-          }.merge(options)
-          
-          # Select the options needed to build the query filter into their own hash.
-          filter_options = opts.select{ |k,v| [:since, :until, :exclude].include?(k) }
-
-          # Build the query based the 'sources' parameter
-           query = {
-            :query => {
-              :filtered => {
-                :query => { :match_all => { } },
-                :filter => self.build_query_filter(sources, filter_options)
-              }
-            },
-            :facets => {
-              :people => {
-                :terms => {
-                  :field => 'people.id'
-                }
-              }
-            } 
-          }
-
-          search = Tire.search 'resources', query
-          search.results.facets['people']['terms'].map do |f|
-            [f['term'], f['count']]
-          end
+          Resource.search query
         end
 
       end

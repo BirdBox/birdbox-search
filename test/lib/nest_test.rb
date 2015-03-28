@@ -219,24 +219,6 @@ describe Birdbox::Search::Nest do
     results.count.must_equal(2)
   end
 
-  it "must be able to find all people tagged in the resources belonging to a nest" do
-    sources = {
-      'facebook' => {
-        'albums' => %w(1 2)
-      },
-      'instagram' => {
-        'tags' => {
-          '200001' => %w(california),
-          '200002' => %w(california norcal)
-        }
-      }
-    }
-    people = Nest.find_tagged_people(sources)
-    people.count.must_equal(4)
-    people[0].first.must_equal('22')
-    people[0].last.must_equal(3)
-  end
-
   it "must be able to exclude resources by id" do
     sources = {
       'facebook' => {

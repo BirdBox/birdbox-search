@@ -1,4 +1,4 @@
-require "tire"
+require 'elasticsearch/persistence/model'
 require "birdbox-search/version"
 require "birdbox-search/resource"
 require "birdbox-search/nest"
@@ -9,10 +9,10 @@ module Birdbox
   # An abstraction of the Elasticsearch API powering Birdbox Search.
   module Search
     
-    # Passes configuration attributes to Tire.
+    # Sets config
     # @param [block] block
-    def Search.configure(&block)
-      Tire::Configuration.class_eval(&block)
+    def Search.configure(config)
+      Elasticsearch::Persistence.client = Elasticsearch::Client.new host: config
     end
   
   end

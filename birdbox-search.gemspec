@@ -13,7 +13,8 @@ Gem::Specification.new do |gem|
   gem.homepage      = "http://www.birdbox.com"
 
   gem.add_dependency "rake", "~> 10.0.0"
-  gem.add_dependency "tire", "~> 0.5.4"
+  gem.add_dependency "elasticsearch-persistence"
+  #gem.add_dependency "tire", "~> 0.5.4"
 
   gem.add_development_dependency "yard", "~> 0.8.5"
   gem.add_development_dependency "redcarpet", "~> 2.2"

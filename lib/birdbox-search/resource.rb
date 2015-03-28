@@ -13,6 +13,8 @@ module Birdbox
       #include Tire::Model::Persistence
       include Elasticsearch::Persistence::Model
 
+      index_name "resources"
+
       # user has many authentication which has many services, so if we EVER want to tie the resource to a service, unfortunately
       # we have to persist the service somehow (and do not want to couple these togther) - so add a service name
       # think of google as the authentication provider and 'picasa, g+, gmail, etc as the services'
@@ -34,9 +36,9 @@ module Birdbox
 
       attribute :download_height, Integer, :index => 'no'
       attribute :download_width, Integer, :index => 'no'
-      attribute :created_at, Date,    :index => 'not_analyzed'
-      attribute :updated_at, Date,    :index => 'not_analyzed'
-      attribute :uploaded_at, Date,    :index => 'not_analyzed'
+      attribute :created_at, DateTime,    :index => 'not_analyzed', default: lambda { |o,a| Time.now.utc }
+      attribute :updated_at, DateTime,    :index => 'not_analyzed', default: lambda { |o,a| Time.now.utc }
+      attribute :uploaded_at, DateTime,    :index => 'not_analyzed', default: lambda { |o,a| Time.now.utc }
       attribute :taken_at, Date,    :index => 'not_analyzed'
       attribute :description, String,  :index => 'analyzed',     :analyzer => 'standard'
       attribute :download_url, String,  :index => 'no'
@@ -66,22 +68,16 @@ module Birdbox
         @nest_ids = @nests.dup
         @_updated = false
         @id = Resource.generate_id(@provider, @external_id)
-        @created_at = @updated_at = Time.now.utc.strftime("%FT%T.%LZ")
+        @created_at = @updated_at = Time.now.utc
         
-        @taken_at ||= Time.now
-        unless @taken_at.is_a?(String)
-          @taken_at = @taken_at.utc.strftime("%FT%T.%LZ")
-        end
+        @taken_at ||= Time.now.utc
         
-        @uploaded_at ||= Time.now
-        unless @uploaded_at.is_a?(String)
-          @uploaded_at = @uploaded_at.utc.strftime("%FT%T.%LZ")
-        end
+        @uploaded_at ||= Time.now.utc
         
         # Often the save() method is called for every resource that is discovered. Actually updating
         # the index that often is going to cause performance issues.  So, only update the resource
         # if certain properties have changed.
-        resource = Resource.find(@id)
+        resource = Resource.find(@id) rescue nil
         
         # If the resource does not exist yet, then save it, else update
         if resource and resource.id
